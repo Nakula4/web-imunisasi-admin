@@ -1,0 +1,29 @@
+.content {
+  margin-left: 270px;
+  padding: 20px;
+}
+
+.riwayat-container {
+  background-color: #f0fff4;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 1000px;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.form-select {
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  appearance: none;
+}

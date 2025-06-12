@@ -1,0 +1,18 @@
+body {
+    background-color: #f8f9fa;
+  }
+  .card {
+    border: none;
+    border-radius: 1rem;
+  }
+  .table thead {
+    background-color: #e9ecef;
+  }
+  .status-tersedia {
+    color: green;
+    font-weight: bold;
+  }
+  .status-tidak {
+    color: red;
+    font-weight: bold;
+  }
