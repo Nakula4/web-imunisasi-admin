@@ -1,8 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-
-const firebaseConfig = {
+// Konfigurasi Firebase
+  const firebaseConfig = {
   apiKey: "AIzaSyDp0uoEdd8M82cbaveehd9T3YDpB1ZFPO0",
   authDomain: "imunisasiku-1abc0.firebaseapp.com",
   projectId: "imunisasiku-1abc0",
@@ -11,7 +8,7 @@ const firebaseConfig = {
   appId: "1:466468445341:web:6c2c6d4c8571c7a53f4874",
   measurementId: "G-MB5TTXB9WY"
 };
-  
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  
+
+
+// Pastikan Firebase sudah diinisialisasi di firebase-init.js
+firebase.initializeApp(firebaseConfig);
