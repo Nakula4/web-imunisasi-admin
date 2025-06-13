@@ -6,61 +6,117 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Admin - Imunisasi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/style/dashboard-admin.css">
-  <!-- Tambahkan Chart.js -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/script/firebase-ini.js"></script>
 </head>
 
 <body>
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Sidebar -->
-      <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-        <h4 class="mb-4">Admin Imunisasi</h4>
-        <a onclick="showDashboard(); setPageTitle('Dashboard')">🏠 Dashboard</a>
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-        <div class="dropdown">
-          <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            📋 Data Imunisasi
-          </a>
-          <ul class="dropdown-menu dropdown-menu-dark bg-gradient">
-            <li><a class="dropdown-item text-white" onclick="loadContent('data-anak.html'); setPageTitle('Data Anak')">👶 Data Anak</a></li>
-            <li><a class="dropdown-item text-white" onclick="loadContent('input-perkembangan-anak.html'); setPageTitle('Input Perkembangan Anak')">📝 Input Perkembangan</a></li>
-          </ul>
+  <nav class="sidebar" id="sidebar">
+    <h4 class="mb-4">
+      <i class="fas fa-shield-virus me-2"></i>
+      Admin Imunisasi
+    </h4>
+    <a onclick="showDashboard(); setPageTitle('Dashboard'); closeSidebar()">
+      <i class="fas fa-home"></i>
+      <span>Dashboard</span>
+    </a>
+    <div class="dropdown">
+      <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Data Imunisasi</span>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark bg-gradient">
+        <li><a class="dropdown-item text-white" onclick="loadContent('data-anak.html'); setPageTitle('Data Anak'); closeSidebar()">
+          <i class="fas fa-baby"></i> Data Anak
+        </a></li>
+        <li><a class="dropdown-item text-white" onclick="loadContent('input-perkembangan-anak.html'); setPageTitle('Input Perkembangan Anak'); closeSidebar()">
+          <i class="fas fa-edit"></i> Input Perkembangan
+        </a></li>
+      </ul>
+    </div>
+    <a onclick="loadContent('jadwal.html'); setPageTitle('Jadwal Imunisasi'); closeSidebar()">
+      <i class="fas fa-calendar-alt"></i>
+      <span>Jadwal Imunisasi</span>
+    </a>
+    <a onclick="loadContent('riwayat.html'); setPageTitle('Riwayat Imunisasi'); closeSidebar()">
+      <i class="fas fa-history"></i>
+      <span>Riwayat</span>
+    </a>
+    <a onclick="loadContent('laporan.html'); setPageTitle('📈 Laporan Imunisasi Bulanan'); closeSidebar()">
+      <i class="fas fa-chart-line"></i>
+      <span>Laporan</span>
+    </a>
+    <a onclick="loadContent('pengaturan.html'); setPageTitle('Pengaturan'); closeSidebar()">
+      <i class="fas fa-cog"></i>
+      <span>Pengaturan</span>
+    </a>
+    <a href="index.html">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Keluar</span>
+    </a>
+  </nav>
+
+  <main class="content">
+    <div id="header-title" class="page-header">
+      <h2 class="animated-title">Dashboard</h2>
+    </div>
+
+    <div class="content-wrapper">
+      <div id="dashboard-content">
+        <div class="welcome-card container-limit">
+          <h2><i class="fas fa-hand-wave me-2"></i>Hai Admin!</h2>
+          <p>Senang melihatmu lagi! Yuk, cek info terbaru soal imunisasi hari ini.</p>
         </div>
 
-        <a onclick="loadContent('jadwal.html'); setPageTitle('Jadwal Imunisasi')">📅 Jadwal Imunisasi</a>
-        <a onclick="loadContent('riwayat.html'); setPageTitle('Riwayat Imunisasi')">🕓 Riwayat</a>
-        <a onclick="loadContent('laporan.html'); setPageTitle('📈 Laporan Imunisasi Bulanan')">📈 Laporan</a>
-        <a onclick="loadContent('pengaturan.html'); setPageTitle('Pengaturan')">⚙️ Pengaturan</a>
-        <a href="index.html">🚪 Keluar</a>
-      </nav>
-
-      <!-- Content -->
-      <main class="col-md-9 ms-sm-auto col-lg-10 content">
-        <div id="header-title" class="page-header container-limit">
-          <h2 class="animated-title">Dashboard</h2>
-        </div>
-
-        <div id="dashboard-content">
-          <div class="welcome-card container-limit mt-4">
-            <h2>Hai Admin 👋</h2>
-            <p>Senang melihatmu lagi! Yuk, cek info terbaru soal imunisasi hari ini.</p>
-          </div>
-
-          <div class="card mt-4 shadow-sm container-limit">
-            <div class="card-body">
-              <h5 class="card-title">📊 Ringkasan Hari Ini</h5>
-              <p class="card-text">👶 Bayi yang sudah diimunisasi: <strong>150</strong></p>
-              <p class="card-text">🕒 Jadwal imunisasi hari ini: <strong>3</strong></p>
+        <div class="container-limit">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-baby"></i></div>
+              <div class="stat-number">150</div>
+              <div class="stat-label">Bayi Diimunisasi</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+              <div class="stat-number">3</div>
+              <div class="stat-label">Jadwal Hari Ini</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-syringe"></i></div>
+              <div class="stat-number">1,247</div>
+              <div class="stat-label">Total Imunisasi</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+              <div class="stat-number">98.5%</div>
+              <div class="stat-label">Tingkat Keberhasilan</div>
             </div>
           </div>
         </div>
 
-        <div id="dynamic-content" style="display: none;" class="container-limit"></div>
-      </main>
+        <div class="card mt-4 shadow-sm container-limit">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="fas fa-chart-bar me-2"></i>
+              Ringkasan Hari Ini
+            </h5>
+            <p><i class="fas fa-baby me-2"></i>Bayi yang sudah diimunisasi: <strong>150</strong></p>
+            <p><i class="fas fa-clock me-2"></i>Jadwal imunisasi hari ini: <strong>3</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="dynamic-content" style="display: none;" class="container-limit"></div>
     </div>
-  </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -73,17 +129,28 @@
     }
 
     function loadContent(url) {
-      const dashboard = document.getElementById('dashboard-content');
-      const container = document.getElementById('dynamic-content');
-      dashboard.style.display = 'none';
-      fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          container.innerHTML = html;
-          container.style.display = 'block';
-          renderChartIfAvailable(); // Memanggil render chart jika ada di halaman
-        });
-    }
+  const dashboard = document.getElementById('dashboard-content');
+  const container = document.getElementById('dynamic-content');
+  dashboard.style.display = 'none';
+
+  fetch(url)
+    .then(res => res.text())
+    .then(html => {
+      container.innerHTML = html;
+      container.style.display = 'block';
+
+      // Deteksi dan muat JS tambahan jika halaman data-anak
+      if (url.includes('data-anak.html')) {
+        const script = document.createElement('script');
+        script.src = '/script/data-anak.js'; // pastikan path ini benar
+        script.onload = () => {
+          if (typeof loadDataAnak === 'function') loadDataAnak();
+        };
+        document.body.appendChild(script);
+      }
+    });
+}
+
 
     function setPageTitle(title) {
       const header = document.getElementById('header-title');
@@ -91,7 +158,6 @@
       header.innerHTML = `<h2 class="animated-title">${title}</h2>`;
     }
 
-    // Fungsi khusus untuk render chart jika <canvas> ditemukan
     function renderChartIfAvailable() {
       const canvas = document.getElementById('imunisasiChart');
       if (canvas) {
@@ -100,26 +166,17 @@
           type: 'bar',
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-            datasets: [{
-              label: 'Jumlah Imunisasi',
-              data: [50, 45, 60, 40, 45, 80],
-              backgroundColor: '#0d6efd'
-            },
-            {
-              label: 'Keluhan',
-              data: [3, 2, 1, 4, 2, 5],
-              backgroundColor: '#ffc107'
-            }]
+            datasets: [
+              { label: 'Jumlah Imunisasi', data: [50, 45, 60, 40, 45, 80], backgroundColor: '#0d6efd' },
+              { label: 'Keluhan', data: [3, 2, 1, 4, 2, 5], backgroundColor: '#ffc107' }
+            ]
           },
           options: {
             responsive: true,
             scales: {
               y: {
                 beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Jumlah Anak'
-                }
+                title: { display: true, text: 'Jumlah Anak' }
               }
             }
           }
@@ -127,8 +184,31 @@
       }
     }
 
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('show');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const mobileBtn = document.querySelector('.mobile-menu-btn');
+      if (window.innerWidth <= 768 && !sidebar.contains(event.target) && !mobileBtn.contains(event.target)) {
+        closeSidebar();
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) closeSidebar();
+    });
+
     window.onload = showDashboard;
   </script>
+  <script src="/script/data-anak.js"></script>
 </body>
 
 </html>

@@ -6,37 +6,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Admin - Imunisasi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/style/style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/style/style.css">
   <!-- Firebase Core -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Inisialisasi Firebase -->
+  <script src="/script/firebase-ini.js"></script>
 
-<!-- Inisialisasi Firebase -->
-<script src="firebase-ini.js"></script>
 </head>
 
-
 <body>
+  <!-- Animated background particles -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
   <div class="container">
     <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-12 col-sm-10 col-md-8 col-lg-5">
-        <div class="login-card">
-          <h3>Login Admin Imunisasi</h3>
-          <form>
-            <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" class="form-control" id="email" placeholder="Masukkan Email" required>
+      <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+        <div class="login-wrapper">
+          <div class="login-header">
+            <div class="login-icon">
+              <i class="fas fa-user-shield"></i>
             </div>
+            <h1 class="login-title">Admin Portal</h1>
+
+          </div>
+
+          <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="errorText"></span>
+          </div>
+
+          <form id="loginForm">
             <div class="mb-3">
+              <label for="email" class="form-label">Email Address</label>
+              <div class="input-group">
+                <input type="email" class="form-control" id="email" placeholder="Masukkan Email" required>
+                <i class="fas fa-envelope input-icon"></i>
+              </div>
+            </div>
+
+            <div class="mb-4">
               <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="password" placeholder="Masukkan Password" required>
+              <div class="input-group">
+                <input type="password" class="form-control" id="password" placeholder="Masukkan Password" required>
+                <i class="fas fa-lock input-icon"></i>
+              </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <a href="daftar-admin.html" class="text-decoration-none text-success">Daftar</a>
+
+            <div class="d-grid mb-4">
+              <button type="submit" class="btn btn-login" id="loginBtn">
+                <span class="loading" id="loadingSpinner"></span>
+                <span id="loginText">Masuk ke Dashboard</span>
+              </button>
             </div>
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary">Login</button>
+
+            <div class="divider">
+              <span>atau</span>
+            </div>
+
+            <div class="text-center">
+              <a href="daftar-admin.html" class="register-link">
+                <i class="fas fa-user-plus me-2"></i>
+                Buat Akun Admin Baru
+              </a>
             </div>
           </form>
         </div>
@@ -45,8 +84,127 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Enhanced form interactions
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('loginForm');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const loginBtn = document.getElementById('loginBtn');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const loginText = document.getElementById('loginText');
+      const errorMessage = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+
+      // Add input focus effects
+      const inputs = [emailInput, passwordInput];
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.style.transform = 'translateY(-2px)';
+        });
+
+        input.addEventListener('blur', function() {
+          this.parentElement.style.transform = 'translateY(0)';
+        });
+
+        // Add typing effect
+        input.addEventListener('input', function() {
+          if (this.value.length > 0) {
+            this.style.background = 'rgba(255, 255, 255, 0.15)';
+          } else {
+            this.style.background = 'rgba(255, 255, 255, 0.1)';
+          }
+        });
+      });
+
+      // Form submission with loading state
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        loadingSpinner.classList.add('active');
+        loginText.textContent = 'Memverifikasi...';
+        loginBtn.disabled = true;
+        errorMessage.style.display = 'none';
+
+        // Simulate authentication process
+        setTimeout(() => {
+          // Hide loading state
+          loadingSpinner.classList.remove('active');
+          loginText.textContent = 'Masuk ke Dashboard';
+          loginBtn.disabled = false;
+
+          // Here you would typically call your actual login script
+          // For now, we'll just show success or error
+          if (emailInput.value && passwordInput.value) {
+            // Success - redirect or call your login.js
+            if (typeof window.loginUser === 'function') {
+              window.loginUser(emailInput.value, passwordInput.value);
+            } else {
+              // Fallback if login.js is not loaded
+              console.log('Login attempt:', emailInput.value);
+              showError('Script login tidak ditemukan. Pastikan login.js sudah dimuat.');
+            }
+          } else {
+            showError('Mohon lengkapi email dan password.');
+          }
+        }, 1500);
+      });
+
+      function showError(message) {
+        errorText.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+          errorMessage.style.display = 'none';
+        }, 5000);
+      }
+
+      // Add particle animation on click
+      document.addEventListener('click', function(e) {
+        createClickEffect(e.clientX, e.clientY);
+      });
+
+      function createClickEffect(x, y) {
+        const ripple = document.createElement('div');
+        ripple.style.position = 'fixed';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.width = '10px';
+        ripple.style.height = '10px';
+        ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+        ripple.style.borderRadius = '50%';
+        ripple.style.transform = 'translate(-50%, -50%)';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.zIndex = '9999';
+        ripple.style.animation = 'rippleEffect 0.6s ease-out';
+        
+        document.body.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      }
+
+      // Add CSS for ripple effect
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes rippleEffect {
+          0% {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(4);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
   <script src="script/login.js"></script>
-  
 </body>
 
 </html>

@@ -12,7 +12,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     await auth.signInWithEmailAndPassword(email, password);
 
     // Redirect jika sukses
-    window.location.href = "dashboard.html";
+    window.location.href = "dashboard-admin.html";
   } catch (err) {
     console.error("Login error:", err);
     alert("Gagal login: " + err.message);
