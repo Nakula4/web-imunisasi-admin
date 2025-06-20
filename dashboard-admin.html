@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,9 +12,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/script/firebase-ini.js"></script>
 </head>
-
 <body>
-  <button class="mobile-menu-btn" onclick="toggleSidebar()">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Toggle Menu">
     <i class="fas fa-bars"></i>
   </button>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -129,28 +127,42 @@
     }
 
     function loadContent(url) {
-  const dashboard = document.getElementById('dashboard-content');
-  const container = document.getElementById('dynamic-content');
-  dashboard.style.display = 'none';
+      const dashboard = document.getElementById('dashboard-content');
+      const container = document.getElementById('dynamic-content');
+      dashboard.style.display = 'none';
 
-  fetch(url)
-    .then(res => res.text())
-    .then(html => {
-      container.innerHTML = html;
-      container.style.display = 'block';
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error(`Gagal memuat ${url}: ${res.statusText}`);
+          return res.text();
+        })
+        .then(html => {
+          container.innerHTML = html;
+          container.style.display = 'block';
 
-      // Deteksi dan muat JS tambahan jika halaman data-anak
-      if (url.includes('data-anak.html')) {
-        const script = document.createElement('script');
-        script.src = '/script/data-anak.js'; // pastikan path ini benar
-        script.onload = () => {
-          if (typeof loadDataAnak === 'function') loadDataAnak();
-        };
-        document.body.appendChild(script);
-      }
-    });
-}
-
+          // Muat script tambahan berdasarkan halaman yang dimuat
+          if (url.includes('data-anak.html')) {
+            const script = document.createElement('script');
+            script.src = '/script/data-anak.js';
+            script.onload = () => {
+              if (typeof loadDataAnak === 'function') loadDataAnak();
+            };
+            document.body.appendChild(script);
+          } else if (url.includes('jadwal.html')) {
+            const script = document.createElement('script');
+            script.src = '/script/jadwal.js';
+            script.onload = () => {
+              if (typeof loadDataBidan === 'function') loadDataBidan();
+            };
+            document.body.appendChild(script);
+          }
+        })
+        .catch(error => {
+          console.error('Error memuat konten:', error);
+          container.innerHTML = `<div class="alert alert-danger">Gagal memuat konten: ${error.message}</div>`;
+          container.style.display = 'block';
+        });
+    }
 
     function setPageTitle(title) {
       const header = document.getElementById('header-title');
@@ -208,7 +220,5 @@
 
     window.onload = showDashboard;
   </script>
-  <script src="/script/data-anak.js"></script>
 </body>
-
 </html>

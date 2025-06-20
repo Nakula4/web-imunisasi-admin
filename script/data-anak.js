@@ -20,7 +20,6 @@ function loadDataAnak() {
             <td>${data.jenis_kelamin || '-'}</td>
             <td>${data.berat || '-'}</td>
             <td>${data.tinggi || '-'}</td>
-            <td>${data.keluhan || '-'}</td>
             <td>
               <a href="edit-anak.html?id=${doc.id}" class="btn btn-warning btn-sm">Edit</a>
               <button class="btn btn-danger btn-sm" onclick="hapusData('${doc.id}')">Hapus</button>
