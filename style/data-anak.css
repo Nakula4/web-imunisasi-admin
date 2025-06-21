@@ -1,10 +1,181 @@
 body {
-      background-color: #f8f9fa;
-    }
-    .table thead {
-      background-color: #007bff;
-      color: white;
-    }
-    .action-btns button {
-      margin-right: 5px;
-    }
+  background-color: #f8f9fa;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  padding: 15px 20px;
+  border-bottom: none;
+}
+
+.card-header h4 {
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Table Styling */
+.modern-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.modern-table thead th {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.modern-table tbody tr {
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background: #f1f9ff;
+  transform: scale(1.01);
+}
+
+.modern-table tbody td {
+  padding: 12px;
+  font-size: 0.95rem;
+  color: #333;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* Action Buttons */
+.action-btns .btn {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.action-btns .btn-warning {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #333;
+}
+
+.action-btns .btn-warning:hover {
+  background: #e0a800;
+  border-color: #e0a800;
+  transform: translateY(-2px);
+}
+
+.action-btns .btn-danger {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.action-btns .btn-danger:hover {
+  background: #c82333;
+  border-color: #c82333;
+  transform: translateY(-2px);
+}
+
+/* Modal Styling */
+.modal.fade {
+  z-index: 1060 !important; /* Lebih tinggi dari sidebar pada mobile (1050) */
+}
+
+.modal-backdrop {
+  z-index: 1055 !important; /* Lebih tinggi dari sidebar pada mobile */
+}
+
+.modal-content {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: none;
+  padding: 15px 20px;
+}
+
+.modal-header.bg-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.modal-header.bg-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-dialog {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-content input,
+.modal-content select {
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-table thead th,
+  .modern-table tbody td {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  .action-btns .btn {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+
+  .card-header h4 {
+    font-size: 1.2rem;
+  }
+}

@@ -24,7 +24,6 @@ try {
         console.log('Backdrop modal dihapus');
       }
     });
-    // Pastikan body tidak memiliki kelas modal-open
     document.body.classList.remove('modal-open');
     document.body.style.overflow = 'auto';
     console.log('Kelas modal-open dihapus dari body');
@@ -59,7 +58,7 @@ try {
               <td>${data.no_hp || '-'}</td>
               <td><span class="badge ${data.status === 'Tersedia' ? 'bg-success' : 'bg-danger'}">${data.status || '-'}</span></td>
               <td>
-                <a href="edit-bidan.html?id=${doc.id}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit"></i> Edit</a>
+                <button class="btn btn-warning btn-sm me-1" onclick="editDataBidan('${doc.id}')" data-bs-toggle="modal" data-bs-target="#modalEditBidan"><i class="fas fa-edit"></i> Edit</button>
                 <button class="btn btn-danger btn-sm" onclick="hapusDataBidan('${doc.id}')"><i class="fas fa-trash"></i> Hapus</button>
               </td>
             </tr>
@@ -72,6 +71,69 @@ try {
         tableBody.innerHTML = '<tr><td colspan="4">Gagal memuat data bidan: ' + error.message + '</td></tr>';
       });
   }
+
+  // Edit Data Bidan
+  function editDataBidan(id) {
+    console.log('Mengambil data bidan untuk edit, ID:', id);
+    db.collection("bidan").doc(id).get()
+      .then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          console.log('Data bidan untuk edit:', data);
+          document.getElementById('editBidanId').value = id;
+          document.getElementById('editNamaBidan').value = data.nama || '';
+          document.getElementById('editNoHpBidan').value = data.no_hp || '';
+          document.getElementById('editStatusBidan').value = data.status || '';
+          closeDashboardOverlay();
+          cleanupModalBackdrops();
+        } else {
+          console.error('Dokumen bidan tidak ditemukan:', id);
+          alert('Data bidan tidak ditemukan.');
+        }
+      })
+      .catch((error) => {
+        console.error('Gagal mengambil data bidan untuk edit:', error);
+        alert('Gagal mengambil data bidan: ' + error.message);
+      });
+  }
+
+  // Simpan Perubahan Data Bidan
+  document.getElementById('formEditBidan')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('Form edit bidan disubmit');
+    closeDashboardOverlay();
+    cleanupModalBackdrops();
+    const id = document.getElementById('editBidanId').value;
+    const nama = document.getElementById('editNamaBidan').value.trim();
+    const noHp = document.getElementById('editNoHpBidan').value.trim();
+    const status = document.getElementById('editStatusBidan').value;
+
+    if (!id || !nama || !noHp || !status) {
+      alert('Harap lengkapi semua field.');
+      return;
+    }
+
+    const data = {
+      nama,
+      no_hp: noHp,
+      status,
+      updated_at: firebase.firestore.Timestamp.now()
+    };
+
+    console.log('Menyimpan perubahan data bidan:', data);
+    try {
+      await db.collection('bidan').doc(id).update(data);
+      console.log('Data bidan berhasil diperbarui, ID:', id);
+      alert('Data bidan berhasil diperbarui!');
+      document.getElementById('formEditBidan').reset();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditBidan')).hide();
+      loadDataBidan();
+      loadBidanOptions();
+    } catch (error) {
+      console.error('Gagal menyimpan perubahan data bidan:', error);
+      alert('Gagal menyimpan perubahan: ' + error.message);
+    }
+  });
 
   // Hapus Data Bidan
   function hapusDataBidan(id) {
@@ -158,7 +220,7 @@ try {
               <td>${data.klinik || '-'}</td>
               <td>${data.nama_bidan || '-'}</td>
               <td>
-                <a href="edit-jadwal-klinik.html?id=${doc.id}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit"></i> Edit</a>
+                <button class="btn btn-warning btn-sm me-1" onclick="editDataJadwalKlinik('${doc.id}')" data-bs-toggle="modal" data-bs-target="#modalEditJadwalKlinik"><i class="fas fa-edit"></i> Edit</button>
                 <button class="btn btn-danger btn-sm" onclick="hapusDataJadwalKlinik('${doc.id}')"><i class="fas fa-trash"></i> Hapus</button>
               </td>
             </tr>
@@ -171,6 +233,70 @@ try {
         tableBody.innerHTML = '<tr><td colspan="4">Gagal memuat data jadwal klinik: ' + error.message + '</td></tr>';
       });
   }
+
+  // Edit Data Jadwal Klinik
+  function editDataJadwalKlinik(id) {
+    console.log('Mengambil data jadwal klinik untuk edit, ID:', id);
+    db.collection("jadwal_klinik").doc(id).get()
+      .then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          console.log('Data jadwal klinik untuk edit:', data);
+          document.getElementById('editJadwalKlinikId').value = id;
+          document.getElementById('editTanggalWaktuKlinik').value = data.tanggal_waktu ? data.tanggal_waktu.toDate().toISOString().slice(0, 16) : '';
+          document.getElementById('editKlinik').value = data.klinik || '';
+          document.getElementById('editNamaBidanKlinik').value = data.nama_bidan || '';
+          loadBidanOptionsForEdit();
+          closeDashboardOverlay();
+          cleanupModalBackdrops();
+        } else {
+          console.error('Dokumen jadwal klinik tidak ditemukan:', id);
+          alert('Data jadwal klinik tidak ditemukan.');
+        }
+      })
+      .catch((error) => {
+        console.error('Gagal mengambil data jadwal klinik untuk edit:', error);
+        alert('Gagal mengambil data jadwal klinik: ' + error.message);
+      });
+  }
+
+  // Simpan Perubahan Jadwal Klinik
+  document.getElementById('formEditJadwalKlinik')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('Form edit jadwal klinik disubmit');
+    closeDashboardOverlay();
+    cleanupModalBackdrops();
+    const id = document.getElementById('editJadwalKlinikId').value;
+    const tanggalWaktu = document.getElementById('editTanggalWaktuKlinik').value;
+    const klinik = document.getElementById('editKlinik').value.trim();
+    const namaBidan = document.getElementById('editNamaBidanKlinik').value;
+
+    if (!id || !tanggalWaktu || !klinik || !namaBidan) {
+      alert('Harap lengkapi semua field.');
+      return;
+    }
+
+    const tanggalTimestamp = firebase.firestore.Timestamp.fromDate(new Date(tanggalWaktu));
+    const data = {
+      tanggal_waktu: tanggalTimestamp,
+      klinik,
+      nama_bidan: namaBidan,
+      updated_at: firebase.firestore.Timestamp.now()
+    };
+
+    console.log('Menyimpan perubahan data jadwal klinik:', data);
+    try {
+      await db.collection('jadwal_klinik').doc(id).update(data);
+      console.log('Data jadwal klinik berhasil diperbarui, ID:', id);
+      alert('Data jadwal klinik berhasil diperbarui!');
+      document.getElementById('formEditJadwalKlinik').reset();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditJadwalKlinik')).hide();
+      loadDataJadwalKlinik();
+    } catch (error) {
+      console.error('Gagal menyimpan perubahan data jadwal klinik:', error);
+      alert('Gagal menyimpan perubahan: ' + error.message);
+    }
+  });
 
   // Hapus Data Jadwal Klinik
   function hapusDataJadwalKlinik(id) {
@@ -199,12 +325,12 @@ try {
 
     selectBidan.innerHTML = '<option value="">-- Pilih Bidan --</option>';
 
-    console.log("Mengambil data bidan aktif...");
+    console.log("Mengambil data bidan tersedia...");
     db.collection("bidan").where("status", "==", "Tersedia").get()
       .then((querySnapshot) => {
-        console.log("Jumlah bidan aktif ditemukan:", querySnapshot.size);
+        console.log("Jumlah bidan Tersedia ditemukan:", querySnapshot.size);
         if (querySnapshot.empty) {
-          selectBidan.innerHTML += '<option value="" disabled>Tidak ada bidan aktif</option>';
+          selectBidan.innerHTML += '<option value="" disabled>Tidak ada bidan Tersedia</option>';
         }
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -213,7 +339,36 @@ try {
         });
       })
       .catch((error) => {
-        console.error("Gagal mengambil data bidan aktif: ", error);
+        console.error("Gagal mengambil data bidan Terseida: ", error);
+        selectBidan.innerHTML += '<option value="" disabled>Gagal memuat bidan</option>';
+      });
+  }
+
+  // Load Opsi Nama Bidan untuk Edit Jadwal Klinik
+  function loadBidanOptionsForEdit() {
+    const selectBidan = document.getElementById('editNamaBidanKlinik');
+    if (!selectBidan) {
+      console.error("Elemen editNamaBidanKlinik tidak ditemukan.");
+      return;
+    }
+
+    selectBidan.innerHTML = '<option value="">-- Pilih Bidan --</option>';
+
+    console.log("Mengambil data bidan Tersedia untuk edit...");
+    db.collection("bidan").where("status", "==", "Tersedia").get()
+      .then((querySnapshot) => {
+        console.log("Jumlah bidan Tersedia ditemukan untuk edit:", querySnapshot.size);
+        if (querySnapshot.empty) {
+          selectBidan.innerHTML += '<option value="" disabled>Tidak ada bidan Tersedia</option>';
+        }
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const option = `<option value="${data.nama}">${data.nama}</option>`;
+          selectBidan.insertAdjacentHTML('beforeend', option);
+        });
+      })
+      .catch((error) => {
+        console.error("Gagal mengambil data bidan Tersedia untuk edit: ", error);
         selectBidan.innerHTML += '<option value="" disabled>Gagal memuat bidan</option>';
       });
   }
@@ -294,7 +449,7 @@ try {
     const filter = document.getElementById('filterJadwal').value;
     tableBody.innerHTML = '';
 
-    const today = new Date(2025, 5, 21); // 21 Juni 2025
+    const today = new Date(); // Gunakan tanggal saat ini untuk produksi
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -335,7 +490,7 @@ try {
         <tr>
           <td>${data.nama || '-'}</td>
           <td>${data.jenis_kelamin || '-'}</td>
-          <td>${data.dokter || '-'}</td>
+          <td>${data.bidan || '-'}</td>
           <td>${data.jenis_vaksin || '-'}</td>
           <td>${data.kode_vaksin || '-'}</td>
           <td>${data.keluhan || '-'}</td>

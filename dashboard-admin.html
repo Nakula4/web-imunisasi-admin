@@ -169,13 +169,21 @@
             document.body.appendChild(script);
           } else if (url.includes('input-perkembangan-anak.html')) {
             const script = document.createElement('script');
-            script.src = '/script/input-perkembangan-anak.js';
+            script.src = '/script/input-perkembangan.js';
             document.body.appendChild(script);
           } else if (url.includes('riwayat.html')) {
             const script = document.createElement('script');
             script.src = '/script/riwayat.js';
             script.onload = () => {
               if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
+            };
+            document.body.appendChild(script);
+          } else if (url.includes('laporan.html')) {
+            const script = document.createElement('script');
+            script.src = '/script/laporan.js';
+            script.onload = () => {
+              if (typeof loadDataLaporan === 'function') loadDataLaporan();
+              cleanupModalBackdrops();
             };
             document.body.appendChild(script);
           }
@@ -191,32 +199,6 @@
       const header = document.getElementById('header-title');
       header.style.display = 'block';
       header.innerHTML = `<h2 class="animated-title">${title}</h2>`;
-    }
-
-    function renderChartIfAvailable() {
-      const canvas = document.getElementById('imunisasiChart');
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-            datasets: [
-              { label: 'Jumlah Imunisasi', data: [50, 45, 60, 40, 45, 80], backgroundColor: '#0d6efd' },
-              { label: 'Keluhan', data: [3, 2, 1, 4, 2, 5], backgroundColor: '#ffc107' }
-            ]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Jumlah Anak' }
-              }
-            }
-          }
-        });
-      }
     }
 
     function toggleSidebar() {

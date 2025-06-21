@@ -1,0 +1,41 @@
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Inter', sans-serif;
+    }
+    .card {
+      border: none;
+      border-radius: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .card-body h5 {
+      font-weight: 600;
+      color: #333;
+    }
+    .card-body .fs-4 {
+      color: #007bff;
+      font-weight: 700;
+    }
+    .table thead th {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .table tbody tr:hover {
+      background: #f1f9ff;
+    }
+    @media (max-width: 768px) {
+      .card-body h5 {
+        font-size: 1.1rem;
+      }
+      .card-body .fs-4 {
+        font-size: 1.5rem;
+      }
+      .table thead th {
+        font-size: 0.8rem;
+      }
+    }

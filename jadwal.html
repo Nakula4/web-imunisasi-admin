@@ -80,6 +80,40 @@
       </div>
     </div>
 
+    <!-- Modal Edit Data Bidan -->
+    <div class="modal fade" id="modalEditBidan" tabindex="-1" aria-labelledby="modalEditBidanLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-white">
+            <h5 class="modal-title" id="modalEditBidanLabel"><i class="fas fa-user-md me-2"></i>Edit Data Bidan</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEditBidan">
+              <input type="hidden" id="editBidanId">
+              <div class="mb-3">
+                <label for="editNamaBidan" class="form-label">Nama Bidan</label>
+                <input type="text" class="form-control" id="editNamaBidan" placeholder="Masukkan nama bidan" required>
+              </div>
+              <div class="mb-3">
+                <label for="editNoHpBidan" class="form-label">No HP</label>
+                <input type="tel" class="form-control" id="editNoHpBidan" placeholder="Masukkan nomor HP" required>
+              </div>
+              <div class="mb-3">
+                <label for="editStatusBidan" class="form-label">Status</label>
+                <select class="form-select" id="editStatusBidan" required>
+                  <option value="">-- Pilih Status --</option>
+                  <option value="Tersedia">Tersedia</option>
+                  <option value="Tidak Tersedia">Tidak Tersedia</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabel Jadwal Imunisasi Klinik -->
     <div class="card shadow-sm mt-4">
       <div class="card-header bg-info text-white">
@@ -140,13 +174,45 @@
       </div>
     </div>
 
+    <!-- Modal Edit Jadwal Klinik -->
+    <div class="modal fade" id="modalEditJadwalKlinik" tabindex="-1" aria-labelledby="modalEditJadwalKlinikLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-white">
+            <h5 class="modal-title" id="modalEditJadwalKlinikLabel"><i class="fas fa-clinic-medical me-2"></i>Edit Jadwal Klinik</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEditJadwalKlinik">
+              <input type="hidden" id="editJadwalKlinikId">
+              <div class="mb-3">
+                <label for="editTanggalWaktuKlinik" class="form-label">Tanggal & Waktu</label>
+                <input type="datetime-local" class="form-control" id="editTanggalWaktuKlinik" required>
+              </div>
+              <div class="mb-3">
+                <label for="editKlinik" class="form-label">Klinik</label>
+                <input type="text" class="form-control" id="editKlinik" placeholder="Masukkan nama klinik" required>
+              </div>
+              <div class="mb-3">
+                <label for="editNamaBidanKlinik" class="form-label">Nama Bidan</label>
+                <select class="form-select" id="editNamaBidanKlinik" required>
+                  <option value="">-- Pilih Bidan --</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabel Jadwal Imunisasi -->
     <div class="card shadow-sm mt-4">
       <div class="card-header bg-success text-white">
         <div class="d-flex justify-content-between align-items-center">
           <h4 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Jadwal Imunisasi</h4>
           <div>
-            <select id="filterJadwal" class="form-select form-select-sm" onchange="filterDataJadwal()" title="Filter Jadwal Imunisasi">
+            <select id="filterJadwal" class="form-select form-select-sm" onchange="filterDataJadwal()" title="Filter Data Jadwal">
               <option value="semua">Semua</option>
               <option value="hari-ini">Hari Ini</option>
               <option value="kemarin">Kemarin</option>
@@ -162,7 +228,7 @@
               <tr>
                 <th>Nama Anak</th>
                 <th>Jenis Kelamin</th>
-                <th>Dokter</th>
+                <th>Bidan</th>
                 <th>Jenis Vaksin</th>
                 <th>Kode Vaksin</th>
                 <th>Keluhan</th>

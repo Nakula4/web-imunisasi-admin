@@ -1,38 +1,107 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laporan Imunisasi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Inter', sans-serif;
+    }
+    .card {
+      border: none;
+      border-radius: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .card-body h5 {
+      font-weight: 600;
+      color: #333;
+    }
+    .card-body .fs-4 {
+      color: #007bff;
+      font-weight: 700;
+    }
+    .table thead th {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .table tbody tr:hover {
+      background: #f1f9ff;
+    }
+    .filter-container {
+      margin-bottom: 1.5rem;
+    }
+    .filter-container select {
+      max-width: 200px;
+      border-radius: 5px;
+      border: 1px solid #ced4da;
+      transition: border-color 0.2s ease;
+    }
+    .filter-container select:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+    @media (max-width: 768px) {
+      .card-body h5 {
+        font-size: 1.1rem;
+      }
+      .card-body .fs-4 {
+        font-size: 1.5rem;
+      }
+      .table thead th {
+        font-size: 0.8rem;
+      }
+      .filter-container select {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
-
 <body>
-  <div class="container mt-4">
+  <div class="container mt-4 mb-5">
+    <!-- Filter -->
+    <div class="filter-container">
+      <label for="filterLaporan" class="form-label"><i class="fas fa-filter me-2"></i>Filter Laporan:</label>
+      <select id="filterLaporan" class="form-select">
+        <option value="semuanya" selected>Semuanya</option>
+        <option value="hari-ini">Hari Ini</option>
+        <option value="bulan-ini">Bulan Ini</option>
+        <option value="bulan-kemarin">Bulan Kemarin</option>
+      </select>
+    </div>
+
+    <!-- Kartu Statistik -->
     <div class="row mb-4">
       <div class="col-md-4 mb-3">
         <div class="card text shadow">
           <div class="card-body">
-            <h5>Total Imunisasi</h5>
-            <p class="fs-4">320 Anak</p>
+            <h5><i class="fas fa-syringe me-2"></i>Total Imunisasi</h5>
+            <p class="fs-4" id="totalImunisasi"><i class="fas fa-spinner fa-spin"></i> Memuat...</p>
           </div>
         </div>
       </div>
       <div class="col-md-4 mb-3">
         <div class="card text shadow">
           <div class="card-body">
-            <h5>Bulan Ini</h5>
-            <p class="fs-4">45 Anak</p>
+            <h5><i class="fas fa-calendar-month me-2"></i>Bulan Ini</h5>
+            <p class="fs-4" id="bulanIni"><i class="fas fa-spinner fa-spin"></i> Memuat...</p>
           </div>
         </div>
       </div>
       <div class="col-md-4 mb-3">
         <div class="card text shadow">
           <div class="card-body">
-            <h5>Keluhan Tercatat</h5>
-            <p class="fs-4">7 Kasus</p>
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Keluhan Tercatat</h5>
+            <p class="fs-4" id="keluhanTercatat"><i class="fas fa-spinner fa-spin"></i> Memuat...</p>
           </div>
         </div>
       </div>
@@ -41,7 +110,7 @@
     <!-- Grafik -->
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h5 class="card-title text-center">Grafik Imunisasi per Bulan</h5>
+        <h5 class="card-title text-center"><i class="fas fa-chart-bar me-2"></i>Grafik Imunisasi per Bulan</h5>
         <canvas id="imunisasiChart" height="100"></canvas>
       </div>
     </div>
@@ -49,9 +118,9 @@
     <!-- Tabel Ringkasan -->
     <div class="card shadow-sm">
       <div class="card-body">
-        <h5 class="card-title text-center">Rekapitulasi Imunisasi</h5>
+        <h5 class="card-title text-center"><i class="fas fa-table me-2"></i>Rekapitulasi Imunisasi</h5>
         <div class="table-responsive">
-          <table class="table table-bordered text-center">
+          <table class="table table-bordered table-hover text-center">
             <thead class="table-light">
               <tr>
                 <th>Bulan</th>
@@ -59,44 +128,25 @@
                 <th>Keluhan Tercatat</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Januari</td>
-                <td>50</td>
-                <td>3</td>
-              </tr>
-              <tr>
-                <td>Februari</td>
-                <td>45</td>
-                <td>2</td>
-              </tr>
-              <tr>
-                <td>Maret</td>
-                <td>60</td>
-                <td>1</td>
-              </tr>
-              <tr>
-                <td>April</td>
-                <td>40</td>
-                <td>4</td>
-              </tr>
-              <tr>
-                <td>Mei</td>
-                <td>45</td>
-                <td>2</td>
-              </tr>
-              <tr>
-                <td>Juni</td>
-                <td>80</td>
-                <td>5</td>
-              </tr>
+            <tbody id="tabelLaporan">
+              <tr><td colspan="3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
-  
-</body>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- Inisialisasi Firebase -->
+  <script src="/script/firebase-ini.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Logika Aplikasi -->
+  <script src="/script/laporan.js"></script>
+</body>
 </html>
