@@ -1,18 +1,13 @@
-body {
-    background-color: #f8f9fa;
-  }
-  .card {
-    border: none;
-    border-radius: 1rem;
-  }
-  .table thead {
-    background-color: #e9ecef;
-  }
-  .status-tersedia {
-    color: green;
-    font-weight: bold;
-  }
-  .status-tidak {
-    color: red;
-    font-weight: bold;
-  }
+.modal-content input, .modal-content select {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+}
+.modal {
+  z-index: 1060 !important;
+}
+.modal-backdrop {
+  z-index: 1055 !important;
+}
+#sidebarOverlay {
+  z-index: 1000 !important;
+}
