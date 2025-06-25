@@ -150,7 +150,7 @@
 
           // Muat script tambahan berdasarkan halaman yang dimuat
           if (url.includes('data-anak.html')) {
-            loadScript('/script/data-anak.js', () => {
+            loadScript('script/data-anak.js', () => {
               if (typeof loadDataAnak === 'function') loadDataAnak();
             });
           } else if (url.includes('jadwal.html')) {
@@ -162,7 +162,7 @@
               cleanupModalBackdrops();
             });
           } else if (url.includes('input-perkembangan-anak.html')) {
-            loadScript('/script/input-perkembangan.js', () => {
+            loadScript('script/input-perkembangan.js', () => {
               if (typeof initializePerkembanganForm === 'function') {
                 initializePerkembanganForm(); // Panggil fungsi inisialisasi
               } else {
@@ -170,11 +170,11 @@
               }
             });
           } else if (url.includes('riwayat.html')) {
-            loadScript('/script/riwayat.js', () => {
+            loadScript('script/riwayat.js', () => {
               if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
             });
           } else if (url.includes('laporan.html')) {
-            loadScript('/script/laporan.js', () => {
+            loadScript('script/laporan.js', () => {
               if (typeof loadDataLaporan === 'function') loadDataLaporan();
               cleanupModalBackdrops();
             });
