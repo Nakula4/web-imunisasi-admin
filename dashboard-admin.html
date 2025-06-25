@@ -150,42 +150,34 @@
 
           // Muat script tambahan berdasarkan halaman yang dimuat
           if (url.includes('data-anak.html')) {
-            const script = document.createElement('script');
-            script.src = '/script/data-anak.js';
-            script.onload = () => {
+            loadScript('/script/data-anak.js', () => {
               if (typeof loadDataAnak === 'function') loadDataAnak();
-            };
-            document.body.appendChild(script);
+            });
           } else if (url.includes('jadwal.html')) {
-            const script = document.createElement('script');
-            script.src = '/script/jadwal.js';
-            script.onload = () => {
+            loadScript('/script/jadwal.js', () => {
               if (typeof loadDataBidan === 'function') loadDataBidan();
               if (typeof loadDataJadwalKlinik === 'function') loadDataJadwalKlinik();
               if (typeof loadBidanOptions === 'function') loadBidanOptions();
               if (typeof loadDataJadwalImunisasi === 'function') loadDataJadwalImunisasi();
               cleanupModalBackdrops();
-            };
-            document.body.appendChild(script);
+            });
           } else if (url.includes('input-perkembangan-anak.html')) {
-            const script = document.createElement('script');
-            script.src = '/script/input-perkembangan.js';
-            document.body.appendChild(script);
+            loadScript('/script/input-perkembangan.js', () => {
+              if (typeof initializePerkembanganForm === 'function') {
+                initializePerkembanganForm(); // Panggil fungsi inisialisasi
+              } else {
+                console.error('Fungsi initializePerkembanganForm tidak ditemukan');
+              }
+            });
           } else if (url.includes('riwayat.html')) {
-            const script = document.createElement('script');
-            script.src = '/script/riwayat.js';
-            script.onload = () => {
+            loadScript('/script/riwayat.js', () => {
               if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
-            };
-            document.body.appendChild(script);
+            });
           } else if (url.includes('laporan.html')) {
-            const script = document.createElement('script');
-            script.src = '/script/laporan.js';
-            script.onload = () => {
+            loadScript('/script/laporan.js', () => {
               if (typeof loadDataLaporan === 'function') loadDataLaporan();
               cleanupModalBackdrops();
-            };
-            document.body.appendChild(script);
+            });
           }
         })
         .catch(error => {
@@ -193,6 +185,20 @@
           container.innerHTML = `<div class="alert alert-danger">Gagal memuat konten: ${error.message}</div>`;
           container.style.display = 'block';
         });
+    }
+
+    // Fungsi untuk memuat script secara dinamis
+    function loadScript(src, callback) {
+      // Hapus script sebelumnya jika ada
+      const existingScript = document.querySelector(`script[src="${src}"]`);
+      if (existingScript) existingScript.remove();
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.onload = callback;
+      script.onerror = () => console.error(`Gagal memuat script ${src}`);
+      document.body.appendChild(script);
     }
 
     function setPageTitle(title) {

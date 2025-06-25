@@ -8,16 +8,18 @@ try {
       return;
     }
 
-    tableBody.innerHTML = '<tr><td colspan="9"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="11"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></td></tr>';
 
     console.log("Mengambil data dari koleksi 'laporan'...");
-    db.collection("laporan").get()
+    db.collection("laporan")
+      .orderBy('tanggal_pemeriksaan', 'desc')
+      .get()
       .then((querySnapshot) => {
         console.log("Jumlah dokumen laporan ditemukan:", querySnapshot.size);
         tableBody.innerHTML = "";
         if (querySnapshot.empty) {
           console.log("Tidak ada data di koleksi 'laporan'.");
-          tableBody.innerHTML = '<tr><td colspan="9">Tidak ada data riwayat imunisasi.</td></tr>';
+          tableBody.innerHTML = '<tr><td colspan="11">Tidak ada data riwayat imunisasi.</td></tr>';
           return;
         }
         querySnapshot.forEach((doc) => {
@@ -27,6 +29,7 @@ try {
           const row = `
             <tr>
               <td>${data.nama_anak || '-'}</td>
+              <td>${data.nama_ortu || '-'}</td>
               <td>${data.usia_anak || '-'}</td>
               <td>${data.berat_badan || '-'}</td>
               <td>${data.tinggi_badan || '-'}</td>
@@ -45,7 +48,7 @@ try {
       })
       .catch((error) => {
         console.error("Gagal mengambil data laporan: ", error);
-        tableBody.innerHTML = '<tr><td colspan="9">Gagal memuat data riwayat: ' + error.message + '</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="11">Gagal memuat data riwayat: ' + error.message + '</td></tr>';
       });
   }
 
@@ -65,10 +68,13 @@ try {
     }
   }
 
+  // Ekspor fungsi untuk dipanggil dari dashboard
+  window.loadDataRiwayat = loadDataRiwayat;
+
   // Panggil fungsi saat halaman dimuat
-  loadDataRiwayat();
+  document.addEventListener('DOMContentLoaded', loadDataRiwayat);
 } catch (error) {
   console.error("Gagal menginisialisasi Firestore:", error);
   const tabelRiwayat = document.getElementById('tabelRiwayat');
-  if (tabelRiwayat) tabelRiwayat.innerHTML = '<tr><td colspan="9">Gagal menginisialisasi Firestore: ' + error.message + '</td></tr>';
+  if (tabelRiwayat) tabelRiwayat.innerHTML = '<tr><td colspan="11">Gagal menginisialisasi Firestore: ' + error.message + '</td></tr>';
 }
