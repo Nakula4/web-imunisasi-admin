@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Akun Admin</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style/pengaturan.css">
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container-limit">
+        <!-- Header Section -->
+        <div class="welcome-card mb-4">
+            <h3><i class="fas fa-user-cog me-2"></i>Pengaturan Akun Admin</h3>
+            <p>Kelola informasi akun dan preferensi sistem Anda di sini.</p>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Debug Info Section -->
+        <div class="card shadow-sm mb-4" id="debugCard" style="display: none;">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-bug me-2"></i>Debug Information</h6>
+            </div>
+            <div class="card-body">
+                <div id="debugInfo">
+                    <p><strong>User Status:</strong> <span id="userStatus">Checking...</span></p>
+                    <p><strong>User Email:</strong> <span id="userEmail">-</span></p>
+                    <p><strong>Email Verified:</strong> <span id="emailVerified">-</span></p>
+                    <p><strong>Admin Doc Found:</strong> <span id="adminDocStatus">-</span></p>
+                    <p><strong>Data Loaded:</strong> <span id="dataLoadStatus">-</span></p>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="globalFunctions.toggleDebug()">Hide Debug</button>
+            </div>
+        </div>
+
+        <!-- Toggle Debug Button -->
+        <button class="btn btn-sm btn-outline-secondary mb-3" onclick="globalFunctions.toggleDebug()">
+            <i class="fas fa-bug me-1"></i>Show Debug Info
+        </button>
+
+        <!-- Profile Settings Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Informasi Profil</h5>
+            </div>
+            <div class="card-body">
+                <!-- Loading State -->
+                <div id="profileLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Memuat data profil...</p>
+                </div>
+
+                <!-- Profile Content -->
+                <div id="profileContent" style="display: none;">
+                    <div class="email-info-alert" id="emailInfoAlert">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            <strong>Informasi Email</strong>
+                        </div>
+                        <div class="email-item">
+                            <i class="fas fa-key text-success"></i>
+                            <span>Email untuk Login:</span>
+                            <span class="email-value" id="loginEmailDisplay">Loading...</span>
+                        </div>
+                        <div class="email-item">
+                            <i class="fas fa-eye text-info"></i>
+                            <span>Email yang Ditampilkan:</span>
+                            <span class="email-value" id="displayEmailDisplay">Loading...</span>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            <strong>Penting:</strong> Gunakan "Email untuk Login" saat masuk ke sistem. 
+                            "Email yang Ditampilkan" hanya untuk keperluan profil.
+                        </small>
+                    </div>
+
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="adminNama" class="form-label">Nama Lengkap *</label>
+                                <input type="text" class="form-control" id="adminNama" required>
+                                <div class="invalid-feedback">Nama lengkap harus diisi</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="adminEmail" class="form-label">
+                                    Email Tampilan *
+                                    <small class="text-muted">(untuk profil dan login)</small>
+                                </label>
+                                <input type="email" class="form-control" id="adminEmail" required>
+                                <div class="invalid-feedback">Email harus diisi dengan format yang benar</div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Email ini akan digunakan untuk login setelah diverifikasi
+                                </small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="adminNoHp" class="form-label">Nomor HP</label>
+                                <input type="tel" class="form-control" id="adminNoHp" placeholder="Contoh: 08123456789">
+                                <div class="invalid-feedback">Format nomor HP tidak valid</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="adminUsername" class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="adminUsername" required>
+                                <div class="invalid-feedback">Username harus diisi</div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="profileSubmitBtn">
+                            <i class="fas fa-save me-2"></i>Simpan Perubahan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Keamanan Akun</h5>
+            </div>
+            <div class="card-body">
+                <form id="securityForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="currentPassword" class="form-label">Password Saat Ini *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="currentPassword" placeholder="Masukkan password saat ini">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')" title="Tampilkan/Sembunyikan Password">
+                                    <i class="fas fa-eye" id="currentPasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">Password saat ini harus diisi</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="newPassword" class="form-label">Password Baru *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="newPassword" placeholder="Masukkan password baru (min. 8 karakter)">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')" title="Tampilkan/Sembunyikan Password">
+                                    <i class="fas fa-eye" id="newPasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">Password baru minimal 8 karakter</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmPassword" class="form-label">Konfirmasi Password Baru *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmPassword" placeholder="Konfirmasi password baru">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')" title="Tampilkan/Sembunyikan Password">
+                                    <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">Konfirmasi password tidak cocok</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Autentikasi Dua Faktor</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                                <label class="form-check-label" for="twoFactorAuth">
+                                    Aktifkan 2FA untuk keamanan tambahan
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning" id="securitySubmitBtn">
+                        <i class="fas fa-key me-2"></i>Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- System Preferences Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Preferensi Sistem</h5>
+            </div>
+            <div class="card-body">
+                <form id="preferencesForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="language" class="form-label">Bahasa</label>
+                            <select class="form-select" id="language">
+                                <option value="id" selected>Bahasa Indonesia</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="timezone" class="form-label">Zona Waktu</label>
+                            <select class="form-select" id="timezone">
+                                <option value="Asia/Jakarta" selected>WIB (Jakarta)</option>
+                                <option value="Asia/Makassar">WITA (Makassar)</option>
+                                <option value="Asia/Jayapura">WIT (Jayapura)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dateFormat" class="form-label">Format Tanggal</label>
+                            <select class="form-select" id="dateFormat">
+                                <option value="dd/mm/yyyy" selected>DD/MM/YYYY</option>
+                                <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                                <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="recordsPerPage" class="form-label">Data per Halaman</label>
+                            <select class="form-select" id="recordsPerPage">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Notifikasi</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Notifikasi Email untuk jadwal imunisasi
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="systemNotifications" checked>
+                                <label class="form-check-label" for="systemNotifications">
+                                    Notifikasi sistem untuk aktivitas penting
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="reportNotifications">
+                                <label class="form-check-label" for="reportNotifications">
+                                    Notifikasi laporan bulanan
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-info" id="preferencesSubmitBtn">
+                        <i class="fas fa-save me-2"></i>Simpan Preferensi
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Backup & Export Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-database me-2"></i>Backup & Export Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-cloud-upload-alt me-2"></i>Backup Otomatis</h6>
+                        <p class="text-muted" id="lastBackupInfo">Backup terakhir: Memuat...</p>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                            <label class="form-check-label" for="autoBackup">
+                                Aktifkan backup otomatis harian
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-download me-2"></i>Export Data</h6>
+                        <p class="text-muted">Unduh data untuk keperluan backup manual</p>
+                        <button class="btn btn-success btn-sm me-2" id="exportExcelBtn">
+                            <i class="fas fa-file-excel me-1"></i>Export Excel
+                        </button>
+                        <button class="btn btn-success btn-sm" id="exportCsvBtn">
+                            <i class="fas fa-file-csv me-1"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+                <hr>
+                <button class="btn btn-success" id="manualBackupBtn">
+                    <i class="fas fa-sync-alt me-2"></i>Backup Manual Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="script/firebase-ini.js"></script>
+    <script type="module" src="script/pengaturan.js"></script>
+</body>
+</html>

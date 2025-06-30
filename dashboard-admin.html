@@ -9,27 +9,55 @@
   <link rel="stylesheet" href="style/dashboard-admin.css">
   <style>
     #sidebarOverlay { z-index: 1000 !important; display: none !important; }
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
   </style>
+  
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script/firebase-ini.js"></script>
+  <!-- Removed static pengaturan.js load -->
 </head>
+
 <body>
   <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Toggle Menu">
     <i class="fas fa-bars"></i>
   </button>
+  
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
+  
   <nav class="sidebar" id="sidebar">
     <h4 class="mb-4">
       <i class="fas fa-shield-virus me-2"></i>
       Admin Imunisasi
     </h4>
+    
     <a onclick="showDashboard(); setPageTitle('Dashboard'); closeSidebar()">
       <i class="fas fa-home"></i>
       <span>Dashboard</span>
     </a>
+    
     <div class="dropdown">
       <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fas fa-clipboard-list"></i>
@@ -44,23 +72,28 @@
         </a></li>
       </ul>
     </div>
+    
     <a onclick="loadContent('jadwal.html'); setPageTitle('Jadwal Imunisasi'); closeSidebar()">
       <i class="fas fa-calendar-alt"></i>
       <span>Jadwal Imunisasi</span>
     </a>
+    
     <a onclick="loadContent('riwayat.html'); setPageTitle('Riwayat Imunisasi'); closeSidebar()">
       <i class="fas fa-history"></i>
       <span>Riwayat</span>
     </a>
+    
     <a onclick="loadContent('laporan.html'); setPageTitle('📈 Laporan Imunisasi Bulanan'); closeSidebar()">
       <i class="fas fa-chart-line"></i>
       <span>Laporan</span>
     </a>
-    <a onclick="loadContent('pengaturan.html'); setPageTitle('Pengaturan'); closeSidebar()">
+    
+    <a onclick="loadContent('pengaturan.html'); setPageTitle('Pengaturan Admin'); closeSidebar()">
       <i class="fas fa-cog"></i>
       <span>Pengaturan</span>
     </a>
-    <a href="index.html">
+    
+    <a href="index.html" onclick="logout()">
       <i class="fas fa-sign-out-alt"></i>
       <span>Keluar</span>
     </a>
@@ -70,14 +103,14 @@
     <div id="header-title" class="page-header">
       <h2 class="animated-title">Dashboard</h2>
     </div>
-
+    
     <div class="content-wrapper">
       <div id="dashboard-content">
         <div class="welcome-card container-limit">
           <h2><i class="fas fa-hand-wave me-2"></i>Hai Admin!</h2>
           <p>Senang melihatmu lagi! Yuk, cek info terbaru soal imunisasi hari ini.</p>
         </div>
-
+        
         <div class="container-limit">
           <div class="stats-grid">
             <div class="stat-card">
@@ -102,7 +135,7 @@
             </div>
           </div>
         </div>
-
+        
         <div class="card mt-4 shadow-sm container-limit">
           <div class="card-body">
             <h5 class="card-title">
@@ -114,30 +147,134 @@
           </div>
         </div>
       </div>
-
+      
       <div id="dynamic-content" style="display: none;" class="container-limit"></div>
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+  
   <script>
+    // Global state untuk tracking Firebase dan script loading
+    window.appState = {
+      firebaseReady: false,
+      currentPage: null,
+      loadedScripts: new Set()
+    };
+
+    // Global functions untuk menghindari error
+    window.globalFunctions = {
+      toggleDebug: function() {
+        const debugCard = document.getElementById("debugCard");
+        if (debugCard) {
+          debugCard.style.display = debugCard.style.display === "none" ? "block" : "none";
+        } else {
+          console.log("Debug card tidak ditemukan. Fungsi ini hanya tersedia di halaman pengaturan.");
+        }
+      }
+    };
+
+    // Buat fungsi global
+    function toggleDebug() {
+      window.globalFunctions.toggleDebug();
+    }
+
+    // Fungsi untuk menunggu Firebase ready
+    function waitForFirebase() {
+      return new Promise((resolve) => {
+        if (window.appState.firebaseReady) {
+          resolve();
+          return;
+        }
+        
+        const checkFirebase = () => {
+          if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            window.appState.firebaseReady = true;
+            console.log('Firebase initialized successfully');
+            resolve();
+          } else {
+            setTimeout(checkFirebase, 100);
+          }
+        };
+        checkFirebase();
+      });
+    }
+
+    // Auth state monitoring dengan improved error handling
+    function initializeAuth() {
+      waitForFirebase().then(() => {
+        firebase.auth().onAuthStateChanged(function(user) {
+          if (user) {
+            console.log('User logged in:', user.email);
+            // User is signed in
+          } else {
+            console.log('User not logged in');
+            // Uncomment jika ingin redirect otomatis
+            // window.location.href = 'index.html';
+          }
+        });
+      }).catch(error => {
+        console.error('Error initializing auth:', error);
+      });
+    }
+
+    // Logout function dengan error handling
+    function logout() {
+      waitForFirebase().then(() => {
+        return firebase.auth().signOut();
+      }).then(() => {
+        console.log('User signed out');
+        window.location.href = 'index.html';
+      }).catch((error) => {
+        console.error('Error signing out:', error);
+        // Tetap redirect meski ada error
+        window.location.href = 'index.html';
+      });
+    }
+
     function showDashboard() {
       document.getElementById('dashboard-content').style.display = 'block';
       document.getElementById('dynamic-content').style.display = 'none';
       document.getElementById('header-title').style.display = 'block';
       setPageTitle('Dashboard');
+      window.appState.currentPage = 'dashboard';
       closeSidebar();
+    }
+
+    function showLoadingSpinner(container) {
+      container.innerHTML = `
+        <div class="text-center p-4">
+          <div class="loading-spinner"></div>
+          <p class="mt-2">Memuat data...</p>
+        </div>
+      `;
+    }
+
+    function showError(container, message) {
+      container.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          ${message}
+        </div>
+      `;
     }
 
     function loadContent(url) {
       const dashboard = document.getElementById('dashboard-content');
       const container = document.getElementById('dynamic-content');
+      
       dashboard.style.display = 'none';
-
+      container.style.display = 'block';
+      
+      // Show loading spinner
+      showLoadingSpinner(container);
+      
       // Tutup sidebar dan overlay sebelum memuat konten baru
       closeSidebar();
       cleanupModalBackdrops();
+      
+      // Set current page
+      window.appState.currentPage = url;
 
       fetch(url)
         .then(res => {
@@ -146,59 +283,108 @@
         })
         .then(html => {
           container.innerHTML = html;
-          container.style.display = 'block';
-
-          // Muat script tambahan berdasarkan halaman yang dimuat
-          if (url.includes('data-anak.html')) {
-            loadScript('script/data-anak.js', () => {
-              if (typeof loadDataAnak === 'function') loadDataAnak();
-            });
-          } else if (url.includes('jadwal.html')) {
-            loadScript('script/jadwal.js', () => {
-              if (typeof loadDataBidan === 'function') loadDataBidan();
-              if (typeof loadDataJadwalKlinik === 'function') loadDataJadwalKlinik();
-              if (typeof loadBidanOptions === 'function') loadBidanOptions();
-              if (typeof loadDataJadwalImunisasi === 'function') loadDataJadwalImunisasi();
-              cleanupModalBackdrops();
-            });
-          } else if (url.includes('input-perkembangan-anak.html')) {
-            loadScript('script/input-perkembangan.js', () => {
-              if (typeof initializePerkembanganForm === 'function') {
-                initializePerkembanganForm(); // Panggil fungsi inisialisasi
-              } else {
-                console.error('Fungsi initializePerkembanganForm tidak ditemukan');
-              }
-            });
-          } else if (url.includes('riwayat.html')) {
-            loadScript('script/riwayat.js', () => {
-              if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
-            });
-          } else if (url.includes('laporan.html')) {
-            loadScript('script/laporan.js', () => {
-              if (typeof loadDataLaporan === 'function') loadDataLaporan();
-              cleanupModalBackdrops();
-            });
-          }
+          
+          // Load script berdasarkan halaman yang dimuat
+          return loadPageScript(url);
         })
         .catch(error => {
           console.error('Error memuat konten:', error);
-          container.innerHTML = `<div class="alert alert-danger">Gagal memuat konten: ${error.message}</div>`;
-          container.style.display = 'block';
+          showError(container, `Gagal memuat konten: ${error.message}`);
         });
     }
 
-    // Fungsi untuk memuat script secara dinamis
-    function loadScript(src, callback) {
-      // Hapus script sebelumnya jika ada
-      const existingScript = document.querySelector(`script[src="${src}"]`);
-      if (existingScript) existingScript.remove();
+    // Fungsi untuk memuat script berdasarkan halaman
+    async function loadPageScript(url) {
+      try {
+        // Tunggu Firebase ready terlebih dahulu
+        await waitForFirebase();
+        
+        if (url.includes('data-anak.html')) {
+          await loadScript('script/data-anak.js', false);
+          if (typeof loadDataAnak === 'function') loadDataAnak();
+          
+        } else if (url.includes('jadwal.html')) {
+          await loadScript('script/jadwal.js', false);
+          if (typeof loadDataBidan === 'function') loadDataBidan();
+          if (typeof loadDataJadwalKlinik === 'function') loadDataJadwalKlinik();
+          if (typeof loadBidanOptions === 'function') loadBidanOptions();
+          if (typeof loadDataJadwalImunisasi === 'function') loadDataJadwalImunisasi();
+          cleanupModalBackdrops();
+          
+        } else if (url.includes('input-perkembangan-anak.html')) {
+          await loadScript('script/input-perkembangan.js', false);
+          if (typeof initializePerkembanganForm === 'function') {
+            initializePerkembanganForm();
+          } else {
+            console.error('Fungsi initializePerkembanganForm tidak ditemukan');
+          }
+          
+        } else if (url.includes('riwayat.html')) {
+          await loadScript('script/riwayat.js', false);
+          if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
+          
+        } else if (url.includes('laporan.html')) {
+          await loadScript('script/laporan.js', false);
+          if (typeof loadDataLaporan === 'function') loadDataLaporan();
+          cleanupModalBackdrops();
+          
+        } else if (url.includes('pengaturan.html')) {
+          await loadScript('script/pengaturan.js', true); // Set type="module" for pengaturan.js
+          // Tambahkan delay kecil untuk memastikan DOM sudah ready
+          setTimeout(() => {
+            if (typeof initializePengaturan === 'function') {
+              console.log('Menjalankan initializePengaturan...');
+              initializePengaturan();
+            } else {
+              console.error('Fungsi initializePengaturan tidak ditemukan');
+            }
+          }, 500);
+          cleanupModalBackdrops();
+        }
+        
+      } catch (error) {
+        console.error('Error loading page script:', error);
+        const container = document.getElementById('dynamic-content');
+        showError(container, `Error memuat script: ${error.message}`);
+      }
+    }
 
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.onload = callback;
-      script.onerror = () => console.error(`Gagal memuat script ${src}`);
-      document.body.appendChild(script);
+    // Fungsi untuk memuat script secara dinamis dengan Promise
+    function loadScript(src, isModule = false) {
+      return new Promise((resolve, reject) => {
+        // Cek apakah script sudah dimuat
+        if (window.appState.loadedScripts.has(src)) {
+          resolve();
+          return;
+        }
+        
+        // Hapus script sebelumnya jika ada
+        const existingScript = document.querySelector(`script[src="${src}"]`);
+        if (existingScript) {
+          existingScript.remove();
+          window.appState.loadedScripts.delete(src);
+        }
+        
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        if (isModule) {
+          script.type = 'module'; // Set type="module" for ES module scripts
+        }
+        
+        script.onload = () => {
+          console.log(`Script ${src} berhasil dimuat`);
+          window.appState.loadedScripts.add(src);
+          resolve();
+        };
+        
+        script.onerror = (error) => {
+          console.error(`Gagal memuat script ${src}:`, error);
+          reject(new Error(`Gagal memuat script ${src}`));
+        };
+        
+        document.body.appendChild(script);
+      });
     }
 
     function setPageTitle(title) {
@@ -231,6 +417,7 @@
       document.body.style.overflow = 'auto';
     }
 
+    // Event listeners
     document.addEventListener('click', function(event) {
       const sidebar = document.getElementById('sidebar');
       const mobileBtn = document.querySelector('.mobile-menu-btn');
@@ -243,7 +430,32 @@
       if (window.innerWidth > 768) closeSidebar();
     });
 
-    window.onload = showDashboard;
+    // Initialize aplikasi
+    window.onload = function() {
+      console.log('Dashboard loaded, initializing...');
+      
+      // Initialize auth
+      initializeAuth();
+      
+      // Show dashboard
+      showDashboard();
+      
+      // Debug info
+      console.log('App state:', window.appState);
+    };
+
+    // Debug function untuk troubleshooting
+    window.debugApp = function() {
+      console.log('=== DEBUG INFO ===');
+      console.log('Firebase ready:', window.appState.firebaseReady);
+      console.log('Current page:', window.appState.currentPage);
+      console.log('Loaded scripts:', Array.from(window.appState.loadedScripts));
+      console.log('Firebase apps:', firebase.apps.length);
+      if (firebase.apps.length > 0) {
+        console.log('Firebase app:', firebase.apps[0]);
+      }
+    };
   </script>
+  
 </body>
 </html>

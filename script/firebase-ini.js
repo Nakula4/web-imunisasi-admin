@@ -12,3 +12,4 @@
 
 // Pastikan Firebase sudah diinisialisasi di firebase-init.js
 firebase.initializeApp(firebaseConfig);
+
