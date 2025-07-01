@@ -85,9 +85,14 @@
       <span>Riwayat</span>
     </a>
     
-    <a onclick="loadContent('laporan.html'); setPageTitle('📈 Laporan Imunisasi Bulanan'); closeSidebar()">
+    <a onclick="loadContent('laporan.html'); setPageTitle('Laporan Imunisasi Bulanan'); closeSidebar()">
       <i class="fas fa-chart-line"></i>
       <span>Laporan</span>
+    </a>
+
+    <a onclick="loadContent('kelola-users.html'); setPageTitle('Kelola Users'); closeSidebar()">
+      <i class="fa-solid fa-user"></i>
+      <span>Kelola Users</span>
     </a>
     
     <a onclick="loadContent('pengaturan.html'); setPageTitle('Pengaturan Admin'); closeSidebar()">
@@ -322,7 +327,7 @@
           }
           
         } else if (url.includes('riwayat.html')) {
-          await loadScript('script/riwayat.js', false);
+          await loadScript('script/riwayat.js', true);
           if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
           
         } else if (url.includes('laporan.html')) {
