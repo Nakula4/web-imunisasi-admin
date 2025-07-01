@@ -20,6 +20,23 @@ const waitForFirebase = () => {
   });
 };
 
+const initializeDashboard = () => {
+  // Tambahkan logika inisialisasi dashboard di sini, misalnya:
+  // - Muat data dashboard
+  // - Inisialisasi event listener untuk sidebar
+  console.log('Menginisialisasi dashboard...');
+  // Contoh: Event listener untuk navigasi sidebar
+  const sidebarLinks = document.querySelectorAll('.sidebar-link');
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      console.log('Navigasi ke:', href);
+      window.location.href = href;
+    });
+  });
+};
+
 const checkAuth = async () => {
   console.log('Memeriksa status autentikasi...');
   try {
@@ -39,7 +56,7 @@ const checkAuth = async () => {
         );
       } else {
         console.log('Pengguna sudah login:', user.email);
-        // Lanjutkan inisialisasi dashboard
+        initializeDashboard();
       }
     });
   } catch (error) {
