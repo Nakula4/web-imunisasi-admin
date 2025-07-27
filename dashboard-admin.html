@@ -377,7 +377,19 @@
           await loadScript('script/alertHelper.js', true);
           await loadScript('script/popupUtils.js', true);
           await loadScript('script/riwayat.js', true);
-          if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
+          
+          // Tunggu sebentar untuk memastikan script sudah dimuat
+          setTimeout(() => {
+            if (typeof window.initializeRiwayatForDashboard === 'function') {
+              console.log('Menjalankan initializeRiwayatForDashboard...');
+              window.initializeRiwayatForDashboard();
+            } else if (typeof loadDataRiwayat === 'function') {
+              console.log('Menjalankan loadDataRiwayat fallback...');
+              loadDataRiwayat();
+            } else {
+              console.error('Fungsi riwayat tidak ditemukan');
+            }
+          }, 500);
           
         } else if (url.includes('laporan.html')) {
           await loadScript('script/laporan.js', false);
