@@ -385,7 +385,9 @@
           cleanupModalBackdrops();
 
         } else if (url.includes('kelola-users.html')) {
-          await loadScript('script/kelola-users.js', false);
+          // Load popupUtils.js first as a module, then kelola-users.js as a module
+          await loadScript('script/popupUtils.js', true);
+          await loadScript('script/kelola-users.js', true);
           setTimeout(() => {
             if (typeof window.loadKelolaUsers === 'function') {
               console.log('Menjalankan loadKelolaUsers...');

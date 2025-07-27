@@ -8,6 +8,9 @@ if (typeof firebase === 'undefined') {
 const db = window.db || firebase.firestore();
 console.log('Initializing kelola-users.js, Firestore:', db);
 
+// Import popup utilities for enhanced edit functionality
+import { showPopup, closePopup } from './popupUtils.js';
+
 // DOM elements will be initialized in loadKelolaUsers function
 let userTableBody, searchInput, pagination, loadingSpinner, errorMessage, alertContainer, addUserForm, editUserForm;
 
@@ -179,18 +182,173 @@ function setupSearch() {
     }
 }
 
-// Open edit modal
-function openEditModal(user) {
-    const editUserModal = document.getElementById('editUserModal');
-    if (!editUserModal) {
-        console.error('editUserModal not found');
+// Show custom edit popup similar to riwayat.html style
+function showEditPopup(user) {
+    const existingPopup = document.getElementById('customEditPopup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    const popup = document.createElement('div');
+    popup.id = 'customEditPopup';
+    popup.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center';
+    popup.style.cssText = 'z-index: 9999; background: rgba(0,0,0,0.5);';
+
+    popup.innerHTML = `
+        <div class="card shadow-lg" style="max-width: 600px; width: 90%;">
+            <div class="card-header bg-warning text-white text-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>Edit Data Pengguna
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="editPopupForm">
+                    <input type="hidden" id="editPopupUserId" value="${user.id}">
+                    
+                    <div class="mb-3">
+                        <label for="editPopupNama" class="form-label">
+                            <i class="fas fa-user me-1"></i>Nama Lengkap *
+                        </label>
+                        <input type="text" class="form-control" id="editPopupNama" value="${user.username || ''}" required>
+                        <div class="invalid-feedback">Nama lengkap harus diisi</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editPopupEmail" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email *
+                        </label>
+                        <input type="email" class="form-control" id="editPopupEmail" value="${user.email || ''}" required>
+                        <div class="invalid-feedback">Email harus diisi dengan format yang benar</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editPopupNamaAnak" class="form-label">
+                            <i class="fas fa-child me-1"></i>Nama Anak
+                        </label>
+                        <input type="text" class="form-control" id="editPopupNamaAnak" value="${user.childName || ''}" readonly>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>Nama anak tidak dapat diubah dari halaman ini
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editPopupPhone" class="form-label">
+                            <i class="fas fa-phone me-1"></i>Nomor Telepon *
+                        </label>
+                        <input type="text" class="form-control" id="editPopupPhone" value="${user.phone || ''}" required>
+                        <div class="invalid-feedback">Nomor HP harus diisi dengan format yang benar</div>
+                        <div class="form-text">Format: +62xxx atau 08xxx (9-15 digit)</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Simpan Perubahan
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="closeEditPopupBtn">
+                            <i class="fas fa-times me-1"></i>Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('alertContainer').appendChild(popup);
+
+    // Setup event listeners
+    const closeBtn = popup.querySelector('#closeEditPopupBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEditPopup);
+    }
+
+    const form = popup.querySelector('#editPopupForm');
+    if (form) {
+        form.addEventListener('submit', handleEditSubmit);
+    }
+
+    // Add click outside to close
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            closeEditPopup();
+        }
+    });
+}
+
+// Close edit popup
+function closeEditPopup() {
+    const popup = document.getElementById('customEditPopup');
+    if (popup) {
+        popup.remove();
+    }
+}
+
+// Handle edit form submission
+async function handleEditSubmit(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('editPopupUserId').value;
+    const nama = document.getElementById('editPopupNama').value.trim();
+    const email = document.getElementById('editPopupEmail').value.trim();
+    const phone = document.getElementById('editPopupPhone').value.trim();
+
+    // Validation
+    let isValid = true;
+    
+    // Reset previous validation states
+    document.querySelectorAll('#customEditPopup .form-control').forEach(input => {
+        input.classList.remove('is-invalid');
+    });
+
+    if (!nama) {
+        document.getElementById('editPopupNama').classList.add('is-invalid');
+        isValid = false;
+    }
+
+    if (!email || !email.includes('@')) {
+        document.getElementById('editPopupEmail').classList.add('is-invalid');
+        isValid = false;
+    }
+
+    if (!phone || !phone.match(phoneRegex)) {
+        document.getElementById('editPopupPhone').classList.add('is-invalid');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        showPopup('Validasi Error', 'Mohon periksa kembali data yang dimasukkan', 'danger');
         return;
     }
-    document.getElementById('editUserId').value = user.id;
-    document.getElementById('editNama').value = user.username || '';
-    document.getElementById('editEmail').value = user.email || '';
-    document.getElementById('editPhone').value = user.phone || '';
-    new bootstrap.Modal(editUserModal).show();
+
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Menyimpan...';
+    submitBtn.disabled = true;
+
+    try {
+        await db.collection('users').doc(userId).update({
+            username: nama,
+            email: email,
+            phone: phone,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        closeEditPopup();
+        showPopup('Berhasil', 'Data pengguna berhasil diperbarui', 'success');
+        fetchUsers(); // Refresh the user list
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showPopup('Error', 'Gagal memperbarui data pengguna: ' + error.message, 'danger');
+        
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Open edit modal (updated to use popup)
+function openEditModal(user) {
+    showEditPopup(user);
 }
 
 // Add user
