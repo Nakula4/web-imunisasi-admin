@@ -13,5 +13,5 @@ function showAlert(message, type = "success") {
     }
   }
   
-  export { showAlert }
+  export { showAlert };
   

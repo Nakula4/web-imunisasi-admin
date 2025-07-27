@@ -46,13 +46,6 @@
       border-radius: 10px;
     }
   </style>
-  
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="script/firebase-ini.js"></script>
-  <script type="module" src="script/kelola-users.js"></script>
 </head>
 
 <body>
@@ -82,8 +75,8 @@
                 <tr>
                   <th scope="col">Nama</th>
                   <th scope="col">Email</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">Status Verifikasi</th>
+                  <th scope="col">Nama Anak</th>
+                  <th scope="col">Nomor Telepon</th>
                   <th scope="col">Aksi</th>
                 </tr>
               </thead>
@@ -107,7 +100,6 @@
         </div>
       </div>
     </div>
-  </main>
 
   <!-- Modal Tambah Pengguna -->
   <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
@@ -140,13 +132,9 @@
               <div class="invalid-feedback">Password minimal 8 karakter</div>
             </div>
             <div class="mb-3">
-              <label for="addRole" class="form-label">Role *</label>
-              <select class="form-select" id="addRole" required>
-                <option value="" disabled selected>Pilih role</option>
-                <option value="admin">Admin</option>
-                <option value="editor">Editor</option>
-              </select>
-              <div class="invalid-feedback">Role harus dipilih</div>
+              <label for="addPhone" class="form-label">Nomor HP *</label>
+              <input type="text" class="form-control" id="addPhone" required>
+              <div class="invalid-feedback">Nomor HP harus diisi</div>
             </div>
           </form>
         </div>
@@ -180,12 +168,9 @@
               <div class="invalid-feedback">Email harus diisi dengan format yang benar</div>
             </div>
             <div class="mb-3">
-              <label for="editRole" class="form-label">Role *</label>
-              <select class="form-select" id="editRole" required>
-                <option value="admin">Admin</option>
-                <option value="editor">Editor</option>
-              </select>
-              <div class="invalid-feedback">Role harus dipilih</div>
+              <label for="editPhone" class="form-label">Nomor HP *</label>
+              <input type="text" class="form-control" id="editPhone" required>
+              <div class="invalid-feedback">Nomor HP harus diisi</div>
             </div>
           </form>
         </div>
@@ -196,7 +181,5 @@
       </div>
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

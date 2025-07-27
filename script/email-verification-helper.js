@@ -1,4 +1,4 @@
-import { showAlert } from "./alertHelper" // Declare the showAlert variable
+import { showAlert } from "./alertHelper.js"; // Declare the showAlert variable
 
 // Fungsi untuk cek status verifikasi email secara real-time
 async function checkEmailVerificationStatus(user, maxAttempts = 30) {

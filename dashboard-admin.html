@@ -37,8 +37,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script/firebase-ini.js"></script>
-
-  <!-- Removed static pengaturan.js load -->
 </head>
 
 <body>
@@ -122,7 +120,7 @@
             <div class="stat-card">
               <div class="stat-icon"><i class="fas fa-baby"></i></div>
               <div class="stat-number">150</div>
-              <div class="stat-label">Bayi Diimunisasi</div>
+              <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
@@ -212,7 +210,6 @@
         firebase.auth().onAuthStateChanged(function(user) {
           if (user) {
             console.log('User logged in:', user.email);
-            // User is signed in
           } else {
             console.log('User not logged in');
             // Uncomment jika ingin redirect otomatis
@@ -233,7 +230,6 @@
         window.location.href = 'index.html';
       }).catch((error) => {
         console.error('Error signing out:', error);
-        // Tetap redirect meski ada error
         window.location.href = 'index.html';
       });
     }
@@ -282,6 +278,18 @@
       // Set current page
       window.appState.currentPage = url;
 
+      // Clear previous event listeners for kelola-users
+      const userTableBody = document.getElementById('userTableBody');
+      if (userTableBody) {
+        userTableBody.innerHTML = '';
+        userTableBody.replaceWith(userTableBody.cloneNode(true));
+      }
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.replaceWith(searchInput.cloneNode(true));
+      }
+
       fetch(url)
         .then(res => {
           if (!res.ok) throw new Error(`Gagal memuat ${url}: ${res.statusText}`);
@@ -326,6 +334,8 @@
           }
           
         } else if (url.includes('riwayat.html')) {
+          await loadScript('script/alertHelper.js', true);
+          await loadScript('script/popupUtils.js', true);
           await loadScript('script/riwayat.js', true);
           if (typeof loadDataRiwayat === 'function') loadDataRiwayat();
           
@@ -333,14 +343,29 @@
           await loadScript('script/laporan.js', false);
           if (typeof loadDataLaporan === 'function') loadDataLaporan();
           cleanupModalBackdrops();
+
+        } else if (url.includes('kelola-users.html')) {
+          await loadScript('script/kelola-users.js', false);
+          setTimeout(() => {
+            if (typeof window.loadKelolaUsers === 'function') {
+              console.log('Menjalankan loadKelolaUsers...');
+              window.loadKelolaUsers();
+            } else {
+              console.error('Fungsi loadKelolaUsers tidak ditemukan');
+              showError(document.getElementById('dynamic-content'), 'Gagal memuat fungsi Kelola Users. Pastikan script kelola-users.js dimuat dengan benar.');
+            }
+          }, 500);
+          cleanupModalBackdrops();
           
         } else if (url.includes('pengaturan.html')) {
-          await loadScript('script/pengaturan.js', true); // Set type="module" for pengaturan.js
-          // Tambahkan delay kecil untuk memastikan DOM sudah ready
+          await loadScript('script/alertHelper.js', true);
+          await loadScript('script/popupUtils.js', true);
+          await loadScript('script/email-verification-helper.js', true);
+          await loadScript('script/pengaturan.js', true);
           setTimeout(() => {
-            if (typeof initializePengaturan === 'function') {
+            if (typeof window.initializePengaturan === 'function') {
               console.log('Menjalankan initializePengaturan...');
-              initializePengaturan();
+              window.initializePengaturan();
             } else {
               console.error('Fungsi initializePengaturan tidak ditemukan');
             }
@@ -360,6 +385,7 @@
       return new Promise((resolve, reject) => {
         // Cek apakah script sudah dimuat
         if (window.appState.loadedScripts.has(src)) {
+          console.log(`Script ${src} sudah dimuat sebelumnya`);
           resolve();
           return;
         }
@@ -373,13 +399,14 @@
         
         const script = document.createElement('script');
         script.src = src;
-        script.async = true;
         if (isModule) {
-          script.type = 'module'; // Set type="module" for ES module scripts
+          script.type = 'module';
+        } else {
+          script.async = true;
         }
         
         script.onload = () => {
-          console.log(`Script ${src} berhasil dimuat`);
+          console.log(`Script ${src} berhasil dimuat sebagai ${isModule ? 'module' : 'script'}`);
           window.appState.loadedScripts.add(src);
           resolve();
         };
@@ -389,7 +416,7 @@
           reject(new Error(`Gagal memuat script ${src}`));
         };
         
-        document.body.appendChild(script);
+        document.head.appendChild(script);
       });
     }
 
