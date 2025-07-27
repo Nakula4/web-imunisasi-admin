@@ -29,6 +29,13 @@
       border-radius: 5px;
       margin: 10px 0;
     }
+    .stat-card {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
   </style>
   
   <!-- Firebase Scripts -->
@@ -117,25 +124,20 @@
         
         <div class="container-limit">
           <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" onclick="loadContent('kelola-users.html'); setPageTitle('Kelola Users'); closeSidebar()">
               <div class="stat-icon"><i class="fas fa-baby"></i></div>
-              <div class="stat-number">150</div>
+              <div class="stat-number" id="totalUsers">0</div>
               <div class="stat-label">Total Users</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="loadContent('jadwal.html'); setPageTitle('Jadwal Imunisasi'); closeSidebar()">
               <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-              <div class="stat-number">3</div>
+              <div class="stat-number" id="todaySchedule">0</div>
               <div class="stat-label">Jadwal Hari Ini</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="loadContent('laporan.html'); setPageTitle('Laporan Imunisasi Bulanan'); closeSidebar()">
               <div class="stat-icon"><i class="fas fa-syringe"></i></div>
-              <div class="stat-number">1,247</div>
+              <div class="stat-number" id="totalImunisasi">0</div>
               <div class="stat-label">Total Imunisasi</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-              <div class="stat-number">98.5%</div>
-              <div class="stat-label">Tingkat Keberhasilan</div>
             </div>
           </div>
         </div>
@@ -146,8 +148,8 @@
               <i class="fas fa-chart-bar me-2"></i>
               Ringkasan Hari Ini
             </h5>
-            <p><i class="fas fa-baby me-2"></i>Bayi yang sudah diimunisasi: <strong>150</strong></p>
-            <p><i class="fas fa-clock me-2"></i>Jadwal imunisasi hari ini: <strong>3</strong></p>
+            <p><i class="fas fa-baby me-2"></i>Bayi yang sudah diimunisasi: <strong id="summaryImunisasi">0</strong></p>
+            <p><i class="fas fa-clock me-2"></i>Jadwal imunisasi hari ini: <strong id="summaryJadwal">0</strong></p>
           </div>
         </div>
       </div>
@@ -234,6 +236,43 @@
       });
     }
 
+    // Fungsi untuk mengambil data dari Firestore
+    async function loadDashboardData() {
+      try {
+        await waitForFirebase();
+        const db = firebase.firestore();
+
+        // Ambil total users dari collection 'users'
+        const usersSnapshot = await db.collection('users').get();
+        const totalUsers = usersSnapshot.size;
+        document.getElementById('totalUsers').textContent = totalUsers;
+
+        // Ambil total imunisasi dari collection 'laporan'
+        const laporanSnapshot = await db.collection('laporan').get();
+        const totalImunisasi = laporanSnapshot.size;
+        document.getElementById('totalImunisasi').textContent = totalImunisasi;
+        document.getElementById('summaryImunisasi').textContent = totalImunisasi;
+
+        // Ambil jadwal hari ini dari collection 'tambah_jadwal'
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        
+        const jadwalSnapshot = await db.collection('tambah_jadwal')
+          .where('tanggal', '>=', todayStart)
+          .where('tanggal', '<', todayEnd)
+          .get();
+        
+        const todayScheduleCount = jadwalSnapshot.size;
+        document.getElementById('todaySchedule').textContent = todayScheduleCount;
+        document.getElementById('summaryJadwal').textContent = todayScheduleCount;
+
+      } catch (error) {
+        console.error('Error memuat data dashboard:', error);
+        showError(document.getElementById('dashboard-content'), 'Gagal memuat data dashboard: ' + error.message);
+      }
+    }
+
     function showDashboard() {
       document.getElementById('dashboard-content').style.display = 'block';
       document.getElementById('dynamic-content').style.display = 'none';
@@ -241,6 +280,7 @@
       setPageTitle('Dashboard');
       window.appState.currentPage = 'dashboard';
       closeSidebar();
+      loadDashboardData(); // Memuat data saat dashboard ditampilkan
     }
 
     function showLoadingSpinner(container) {

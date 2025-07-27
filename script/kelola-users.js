@@ -8,14 +8,8 @@ if (typeof firebase === 'undefined') {
 const db = window.db || firebase.firestore();
 console.log('Initializing kelola-users.js, Firestore:', db);
 
-const userTableBody = document.getElementById('userTableBody');
-const searchInput = document.getElementById('searchInput');
-const pagination = document.getElementById('pagination');
-const loadingSpinner = document.getElementById('loadingSpinner');
-const errorMessage = document.getElementById('errorMessage');
-const alertContainer = document.getElementById('alertContainer');
-const addUserForm = document.getElementById('addUserForm');
-const editUserForm = document.getElementById('editUserForm');
+// DOM elements will be initialized in loadKelolaUsers function
+let userTableBody, searchInput, pagination, loadingSpinner, errorMessage, alertContainer, addUserForm, editUserForm;
 
 let users = [];
 let currentPage = 1;
@@ -320,10 +314,29 @@ function togglePassword(inputId) {
 // Initialize Kelola Users
 function loadKelolaUsers() {
     console.log('loadKelolaUsers called');
+    
+    // Initialize DOM elements
+    userTableBody = document.getElementById('userTableBody');
+    searchInput = document.getElementById('searchInput');
+    pagination = document.getElementById('pagination');
+    loadingSpinner = document.getElementById('loadingSpinner');
+    errorMessage = document.getElementById('errorMessage');
+    alertContainer = document.getElementById('alertContainer');
+    addUserForm = document.getElementById('addUserForm');
+    editUserForm = document.getElementById('editUserForm');
+    
+    // Check if essential elements are available
+    if (!userTableBody) {
+        console.error('userTableBody not found - DOM might not be ready');
+        setTimeout(loadKelolaUsers, 100); // Retry after 100ms
+        return;
+    }
+    
     if (!db) {
         showError('Firestore tidak tersedia. Pastikan firebase-ini.js diatur dengan benar.');
         return;
     }
+    
     fetchUsers();
     setupSearch();
     setupAddUserForm();
