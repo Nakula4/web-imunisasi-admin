@@ -393,7 +393,18 @@
           
         } else if (url.includes('laporan.html')) {
           await loadScript('script/laporan.js', false);
-          if (typeof loadDataLaporan === 'function') loadDataLaporan();
+          // Tunggu sebentar untuk memastikan script sudah dimuat
+          setTimeout(() => {
+            if (typeof window.initializeLaporanForDashboard === 'function') {
+              console.log('Menjalankan initializeLaporanForDashboard...');
+              window.initializeLaporanForDashboard();
+            } else if (typeof window.loadDataLaporan === 'function') {
+              console.log('Menjalankan loadDataLaporan fallback...');
+              window.loadDataLaporan();
+            } else {
+              console.error('Fungsi laporan tidak ditemukan');
+            }
+          }, 500);
           cleanupModalBackdrops();
 
         } else if (url.includes('kelola-users.html')) {

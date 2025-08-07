@@ -4,15 +4,13 @@ try {
   // Fungsi untuk mengisi field nama_anak berdasarkan namaOrtu dari koleksi tb_anak
   async function populateNamaAnak(nama_ortu) {
     const namaAnakContainer = document.getElementById('namaAnakContainer');
-    const namaAnakInput = document.getElementById('namaAnak');
-    if (!namaAnakContainer || !namaAnakInput) {
-      console.warn('Elemen namaAnakContainer atau namaAnak tidak ditemukan');
+    if (!namaAnakContainer) {
+      console.warn('Elemen namaAnakContainer tidak ditemukan');
       return;
     }
 
-    // Reset input ke default
-    namaAnakInput.value = '';
-    namaAnakInput.placeholder = 'Tidak ada data anak';
+    // Reset container ke default
+    namaAnakContainer.innerHTML = '<input type="text" id="namaAnak" class="form-control" placeholder="Tidak ada data anak" required>';
 
     if (!nama_ortu) {
       console.log('Tidak ada nama orang tua dimasukkan');
@@ -23,22 +21,53 @@ try {
       console.log(`Mencari data anak untuk nama_ortu: ${nama_ortu}`);
       const anakSnapshot = await db.collection('tb_anak')
         .where('nama_ortu', '==', nama_ortu)
-        .limit(1) // Ambil dokumen pertama saja
-        .get();
+        .get(); // Ambil semua dokumen anak
 
       if (anakSnapshot.empty) {
         console.log(`Tidak ada data anak untuk namaOrtu ${nama_ortu} di tb_anak`);
         return;
       }
 
-      const anakData = anakSnapshot.docs[0].data();
-      console.log(`Data anak ditemukan:`, anakData);
+      const anakList = [];
+      anakSnapshot.docs.forEach(doc => {
+        const anakData = doc.data();
+        if (anakData.nama) {
+          anakList.push({
+            id: doc.id,
+            nama: anakData.nama,
+            usia: anakData.usia || 0
+          });
+        }
+      });
 
-      if (anakData.nama) {
-        namaAnakInput.value = anakData.nama;
-        namaAnakInput.placeholder = '';
+      console.log(`Data anak ditemukan:`, anakList);
+
+      if (anakList.length === 0) {
+        console.log('Tidak ada anak dengan nama yang valid');
+        return;
+      } else if (anakList.length === 1) {
+        // Jika hanya satu anak, tampilkan sebagai input text
+        namaAnakContainer.innerHTML = `<input type="text" id="namaAnak" class="form-control" value="${anakList[0].nama}" readonly required>`;
       } else {
-        console.warn(`Dokumen tb_anak ${anakSnapshot.docs[0].id} tidak memiliki field nama`);
+        // Jika lebih dari satu anak, tampilkan sebagai dropdown
+        let selectHTML = '<select id="namaAnak" class="form-select" required>';
+        selectHTML += '<option value="">-- Pilih Nama Anak --</option>';
+        anakList.forEach(anak => {
+          selectHTML += `<option value="${anak.nama}" data-usia="${anak.usia}">${anak.nama}</option>`;
+        });
+        selectHTML += '</select>';
+        namaAnakContainer.innerHTML = selectHTML;
+
+        // Tambahkan event listener untuk mengisi usia otomatis
+        const namaAnakSelect = document.getElementById('namaAnak');
+        namaAnakSelect.addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          const usia = selectedOption.getAttribute('data-usia');
+          const usiaInput = document.getElementById('usiaAnak');
+          if (usia && usiaInput) {
+            usiaInput.value = usia;
+          }
+        });
       }
     } catch (error) {
       console.error('Gagal mengambil data nama anak dari tb_anak:', error);
@@ -76,7 +105,8 @@ try {
 
     // Ambil nilai dari form
     const nama_ortu = document.getElementById('nama_ortu').value.trim();
-    const namaAnak = document.getElementById('namaAnak').value.trim();
+    const namaAnakElement = document.getElementById('namaAnak');
+    const namaAnak = namaAnakElement ? namaAnakElement.value.trim() : '';
     const usiaAnak = parseInt(document.getElementById('usiaAnak').value);
     const beratBadan = parseFloat(document.getElementById('beratBadan').value);
     const tinggiBadan = parseFloat(document.getElementById('tinggiBadan').value);
@@ -145,11 +175,10 @@ try {
       alert('Data perkembangan anak berhasil disimpan!');
       // Reset form
       document.getElementById('formPerkembangan').reset();
-      // Reset nama_anak
-      const namaAnakInput = document.getElementById('namaAnak');
-      if (namaAnakInput) {
-        namaAnakInput.value = '';
-        namaAnakInput.placeholder = 'Tidak ada data anak';
+      // Reset nama_anak container
+      const namaAnakContainer = document.getElementById('namaAnakContainer');
+      if (namaAnakContainer) {
+        namaAnakContainer.innerHTML = '<input type="text" id="namaAnak" class="form-control" placeholder="Tidak ada data anak" required>';
       }
     } catch (error) {
       console.error('Gagal menyimpan data ke Firestore:', error);

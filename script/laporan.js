@@ -35,7 +35,7 @@ try {
 
     function tryLoadData() {
       const tabelBody = document.getElementById('tabelLaporan');
-      const totalImunisasiEl = document.getElementById('totalImunisasi');
+      const totalImunisasiEl = document.getElementById('totalImunisasiLaporan');
       const bulanIniEl = document.getElementById('bulanIni');
       const keluhanTercatatEl = document.getElementById('keluhanTercatat');
       const filterLaporan = document.getElementById('filterLaporan');
@@ -61,15 +61,17 @@ try {
       let query = db.collection('laporan').orderBy('tanggal_pemeriksaan', 'asc');
 
       // Filter berdasarkan pilihan
-      const currentDate = new Date('2025-06-21'); // Tanggal saat ini: 21 Juni 2025
-      const currentMonth = currentDate.getMonth(); // 5 (Juni)
-      const currentYear = currentDate.getFullYear(); // 2025
+      const currentDate = new Date(); // Tanggal saat ini
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
       const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
       if (filter === 'hari-ini') {
-        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
-        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+        const startOfDay = new Date(currentDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(currentDate);
+        endOfDay.setHours(23, 59, 59, 999);
         query = query
           .where('tanggal_pemeriksaan', '>=', firebase.firestore.Timestamp.fromDate(startOfDay))
           .where('tanggal_pemeriksaan', '<=', firebase.firestore.Timestamp.fromDate(endOfDay));
@@ -128,9 +130,21 @@ try {
             // Hitung total imunisasi
             totalImunisasi++;
 
-            // Hitung imunisasi bulan ini (hanya untuk filter 'semuanya' atau 'bulan-ini')
-            if (month === currentMonth && year === currentYear) {
+            // Hitung imunisasi berdasarkan filter yang dipilih
+            if (filter === 'hari-ini') {
+              // Untuk filter hari ini, hitung semua data yang sudah difilter
               bulanIniImunisasi++;
+            } else if (filter === 'bulan-ini') {
+              // Untuk filter bulan ini, hitung semua data yang sudah difilter
+              bulanIniImunisasi++;
+            } else if (filter === 'bulan-kemarin') {
+              // Untuk filter bulan kemarin, hitung semua data yang sudah difilter
+              bulanIniImunisasi++;
+            } else {
+              // Untuk filter 'semuanya', hitung hanya bulan ini
+              if (month === currentMonth && year === currentYear) {
+                bulanIniImunisasi++;
+              }
             }
 
             // Hitung keluhan (catatan != "tidak ada")
@@ -181,9 +195,40 @@ try {
           }
 
           // Update kartu statistik
-          totalImunisasiEl.textContent = `${totalImunisasi} Anak`;
-          bulanIniEl.textContent = `${bulanIniImunisasi} Anak`;
-          keluhanTercatatEl.textContent = `${totalKeluhan} Kasus`;
+          console.log('Mengupdate totalImunisasiEl dengan nilai:', totalImunisasi);
+          console.log('Element totalImunisasiEl ditemukan:', !!totalImunisasiEl);
+          if (totalImunisasiEl) {
+            totalImunisasiEl.textContent = `${totalImunisasi} Anak`;
+            console.log('totalImunisasiEl berhasil diupdate ke:', totalImunisasiEl.textContent);
+          } else {
+            console.error('Element totalImunisasiEl tidak ditemukan!');
+          }
+          
+          // Update label card kedua berdasarkan filter
+          const bulanIniCardTitle = document.querySelector('.col-md-4:nth-child(2) .card-body h5');
+          if (bulanIniCardTitle) {
+            if (filter === 'hari-ini') {
+              bulanIniCardTitle.innerHTML = '<i class="fas fa-calendar-day me-2"></i>Hari Ini';
+            } else if (filter === 'bulan-ini') {
+              bulanIniCardTitle.innerHTML = '<i class="fas fa-calendar-month me-2"></i>Bulan Ini';
+            } else if (filter === 'bulan-kemarin') {
+              bulanIniCardTitle.innerHTML = '<i class="fas fa-calendar-alt me-2"></i>Bulan Kemarin';
+            } else {
+              bulanIniCardTitle.innerHTML = '<i class="fas fa-calendar-month me-2"></i>Bulan Ini';
+            }
+          }
+          
+          console.log('Mengupdate bulanIniEl dengan nilai:', bulanIniImunisasi);
+          if (bulanIniEl) {
+            bulanIniEl.textContent = `${bulanIniImunisasi} Anak`;
+            console.log('bulanIniEl berhasil diupdate ke:', bulanIniEl.textContent);
+          }
+          
+          console.log('Mengupdate keluhanTercatatEl dengan nilai:', totalKeluhan);
+          if (keluhanTercatatEl) {
+            keluhanTercatatEl.textContent = `${totalKeluhan} Kasus`;
+            console.log('keluhanTercatatEl berhasil diupdate ke:', keluhanTercatatEl.textContent);
+          }
 
           // Inisialisasi grafik
           initChart(chartData);
@@ -310,10 +355,102 @@ try {
 
     tryInitFilter();
   });
+
+  // Ekspor fungsi untuk dipanggil dari dashboard
+  window.loadDataLaporan = function(filter = 'semuanya') {
+    console.log('loadDataLaporan dipanggil dari dashboard dengan filter:', filter);
+    loadDataLaporan(filter);
+  };
+
+  // Fungsi alternatif untuk inisialisasi dari dashboard
+  window.initializeLaporanForDashboard = function() {
+    console.log('initializeLaporanForDashboard dipanggil');
+    closeDashboardOverlay();
+    cleanupModalBackdrops();
+    
+    // Tunggu lebih lama untuk memastikan DOM sudah siap dan tidak ada race condition
+    setTimeout(() => {
+      console.log('Memulai loadDataLaporan setelah delay...');
+      
+      // Inisialisasi filter untuk dashboard
+      initializeFilterForDashboard();
+      
+      // Load data awal
+      loadDataLaporan('semuanya');
+    }, 800);
+  };
+
+  // Fungsi untuk inisialisasi filter khusus dashboard
+  function initializeFilterForDashboard() {
+    console.log('Menginisialisasi filter untuk dashboard...');
+    const maxRetries = 5;
+    let retryCount = 0;
+
+    function tryInitFilter() {
+      const filterLaporan = document.getElementById('filterLaporan');
+      if (!filterLaporan) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Elemen filterLaporan belum ditemukan di dashboard, mencoba ulang (${retryCount}/${maxRetries})...`);
+          setTimeout(tryInitFilter, 300);
+          return;
+        } else {
+          console.error('Elemen filterLaporan tidak ditemukan setelah maksimum retry di dashboard.');
+          return;
+        }
+      }
+
+      console.log('Filter laporan ditemukan di dashboard, menambahkan event listener...');
+      console.log('Filter element:', filterLaporan);
+      console.log('Filter current value:', filterLaporan.value);
+      
+      // Hapus event listener lama jika ada
+      filterLaporan.removeEventListener('change', handleFilterChange);
+      console.log('Event listener lama dihapus');
+      
+      // Tambahkan multiple event listeners untuk memastikan filter berfungsi
+      filterLaporan.addEventListener('change', handleFilterChange);
+      filterLaporan.addEventListener('input', handleFilterChange);
+      filterLaporan.addEventListener('blur', handleFilterChange);
+      console.log('Event listener baru ditambahkan (change, input, blur)');
+      
+      // Test event listener dengan menambahkan click listener juga
+      filterLaporan.addEventListener('click', function() {
+        console.log('Filter dropdown diklik');
+      });
+      
+      // Tambahkan event listener untuk option selection
+      const options = filterLaporan.querySelectorAll('option');
+      options.forEach(option => {
+        option.addEventListener('click', function() {
+          console.log('Option diklik:', this.value);
+          setTimeout(() => {
+            if (filterLaporan.value !== 'semuanya') {
+              console.log('Memaksa trigger change event untuk:', filterLaporan.value);
+              handleFilterChange({ target: filterLaporan });
+            }
+          }, 100);
+        });
+      });
+      
+      console.log('Event listener filter berhasil ditambahkan untuk dashboard');
+    }
+
+    tryInitFilter();
+  }
+
+  // Handler untuk perubahan filter
+  function handleFilterChange(e) {
+    console.log('Filter diubah di dashboard:', e.target.value);
+    console.log('Event target:', e.target);
+    console.log('Event type:', e.type);
+    loadDataLaporan(e.target.value);
+  }
+
 } catch (error) {
   console.error('Gagal menginisialisasi Firestore di laporan.js:', error);
   const tabelBody = document.getElementById('tabelLaporan');
-  const totalImunisasiEl = document.getElementById('totalImunisasi');
+  const totalImunisasiEl = document.getElementById('totalImunisasiLaporan');
   const bulanIniEl = document.getElementById('bulanIni');
   const keluhanTercatatEl = document.getElementById('keluhanTercatat');
   if (tabelBody) {

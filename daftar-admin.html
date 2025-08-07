@@ -4,56 +4,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar Admin</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Daftar Admin - Imunisasi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style/daftar.css">
+  <!-- Firebase Core -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <link rel="stylesheet" href="style/daftar.css">
+  <!-- Inisialisasi Firebase -->
+  <script src="script/firebase-ini.js"></script>
 </head>
 
 <body>
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h3 class="text-center mb-4 text-primary">Daftar Admin</h3>
-            <form id="registerForm">
-              <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="nama" class="form-label">Nama</label>
-                <input type="text" id="nama" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="no_hp" class="form-label">No. HP</label>
-                <input type="text" id="no_hp" class="form-control" required>
-              </div>
-              <div class="d-flex justify-content-between">
-                <a href="index.html" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">Daftar</button>
-              </div>
-            </form>
+  <!-- Animated background particles -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+        <div class="register-wrapper">
+          <div class="register-header">
+            <div class="register-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="register-title">Daftar Admin</h1>
           </div>
+
+          <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="errorText"></span>
+          </div>
+
+          <form id="registerForm">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <div class="input-group">
+                <input type="text" id="username" class="form-control" placeholder="Masukkan Username" required>
+                <i class="fas fa-user input-icon"></i>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-group">
+                <input type="password" id="password" class="form-control" placeholder="Masukkan Password" required>
+                <i class="fas fa-lock input-icon"></i>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="nama" class="form-label">Nama</label>
+              <div class="input-group">
+                <input type="text" id="nama" class="form-control" placeholder="Masukkan Nama" required>
+                <i class="fas fa-signature input-icon"></i>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <div class="input-group">
+                <input type="email" id="email" class="form-control" placeholder="Masukkan Email" required>
+                <i class="fas fa-envelope input-icon"></i>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="no_hp" class="form-label">No. HP</label>
+              <div class="input-group">
+                <input type="text" id="no_hp" class="form-control" placeholder="Masukkan No. HP" required>
+                <i class="fas fa-phone input-icon"></i>
+              </div>
+            </div>
+            
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-register" id="registerBtn">
+                <span class="loading" id="loadingSpinner"></span>
+                <span id="registerText">Daftar Sekarang</span>
+              </button>
+            </div>
+            
+            <div class="text-center">
+              <a href="index.html" class="btn-cancel">
+                <i class="fas fa-arrow-left me-2"></i>
+                Kembali ke Login
+              </a>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
 
-  
-  <script src="script/daftar-admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Add particle animation on click
+    document.addEventListener('click', function(e) {
+      createClickEffect(e.clientX, e.clientY);
+    });
 
+    function createClickEffect(x, y) {
+      const ripple = document.createElement('div');
+      ripple.style.position = 'fixed';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.style.width = '10px';
+      ripple.style.height = '10px';
+      ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+      ripple.style.borderRadius = '50%';
+      ripple.style.transform = 'translate(-50%, -50%)';
+      ripple.style.pointerEvents = 'none';
+      ripple.style.zIndex = '9999';
+      ripple.style.animation = 'rippleEffect 0.6s ease-out';
+      
+      document.body.appendChild(ripple);
+      
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    }
+
+    // Add CSS for ripple effect
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes rippleEffect {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+  <script type="module" src="script/daftar-admin.js"></script>
 </body>
 
 </html>
