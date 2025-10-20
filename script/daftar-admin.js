@@ -79,7 +79,7 @@ const checkUsernameUniqueness = async (username) => {
       .where('username', '==', username)
       .limit(1)
       .get();
-    
+
     return snapshot.empty;
   } catch (error) {
     console.error('Error checking username uniqueness:', error);
@@ -87,30 +87,29 @@ const checkUsernameUniqueness = async (username) => {
   }
 };
 
-// Tampilkan error
-const showError = (message) => {
-  const errorMessage = document.getElementById('errorMessage');
-  const errorText = document.getElementById('errorText');
-  
-  if (errorMessage && errorText) {
-    errorText.textContent = message;
-    errorMessage.style.display = 'block';
-    
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-      errorMessage.style.display = 'none';
-    }, 5000);
-  } else {
-    showPopup('Error', message, 'danger');
+// Cek email uniqueness
+const checkEmailUniqueness = async (email) => {
+  try {
+    const snapshot = await db.collection('admins')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    return snapshot.empty;
+  } catch (error) {
+    console.error('Error checking email uniqueness:', error);
+    throw new Error('Gagal memeriksa ketersediaan email');
   }
 };
 
-// Sembunyikan error
+// Tampilkan error
+const showError = (message) => {
+  showPopup('Error', message, 'danger');
+};
+
+// Sembunyikan error (tidak diperlukan lagi karena menggunakan popup)
 const hideError = () => {
-  const errorMessage = document.getElementById('errorMessage');
-  if (errorMessage) {
-    errorMessage.style.display = 'none';
-  }
+  // No-op
 };
 
 // Update loading state
@@ -184,7 +183,13 @@ const setupRegisterForm = async () => {
       if (!isUsernameUnique) {
         throw new Error('Username sudah digunakan, silakan pilih username lain');
       }
-      
+
+      // Cek email uniqueness
+      const isEmailUnique = await checkEmailUniqueness(email);
+      if (!isEmailUnique) {
+        throw new Error('Email sudah digunakan');
+      }
+
       // Buat user dengan Firebase Auth
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
@@ -203,14 +208,14 @@ const setupRegisterForm = async () => {
       console.log('Akun admin berhasil didaftarkan!');
       showPopup(
         'Berhasil',
-        'Akun admin berhasil didaftarkan! Silakan login dengan akun baru Anda.',
+        'Akun admin berhasil didaftarkan! Anda akan dialihkan ke halaman login.',
         'success'
       );
-      
-      // Redirect ke halaman login setelah 2 detik
+
+      // Redirect ke halaman login setelah popup ditutup atau timeout
       setTimeout(() => {
         window.location.href = 'index.html';
-      }, 2000);
+      }, 3000);
       
     } catch (error) {
       console.error('Kesalahan pendaftaran:', error);
@@ -218,10 +223,16 @@ const setupRegisterForm = async () => {
         'auth/email-already-in-use': 'Email sudah digunakan!',
         'auth/invalid-email': 'Format email tidak valid!',
         'auth/weak-password': 'Password terlalu lemah! Minimal 6 karakter.',
-        'auth/too-many-requests': 'Terlalu banyak percobaan. Silakan tunggu beberapa menit.'
+        'auth/too-many-requests': 'Terlalu banyak percobaan. Silakan tunggu beberapa menit.',
+        'auth/network-request-failed': 'Koneksi internet bermasalah. Silakan coba lagi.',
+        'auth/operation-not-allowed': 'Pendaftaran akun dinonaktifkan sementara.',
+        'auth/requires-recent-login': 'Sesi login telah berakhir. Silakan login ulang.',
+        'permission-denied': 'Tidak memiliki izin untuk melakukan operasi ini.',
+        'unavailable': 'Layanan tidak tersedia saat ini. Silakan coba lagi nanti.'
       };
-      
-      showError(errorMessages[error.code] || `Gagal mendaftar: ${error.message}`);
+
+      const errorMessage = errorMessages[error.code] || `Gagal mendaftar: ${error.message}`;
+      showError(errorMessage);
     } finally {
       // Reset loading state
       updateLoadingState(false);
